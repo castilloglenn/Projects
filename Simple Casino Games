@@ -25,6 +25,9 @@ def review_coins(user):
     print(f'Coins: {user.coins} ({user.user_type})')
 
 
+def new_balance(coins):
+    return f'New Balance: {coins} Coins'
+
 def password_wrong(name):
     user_ans = input(f'You have entered the wrong {name} key.\nWould you like to try again? (Yes/No)\n> ').lower()
     return True if user_ans == 'yes' or user_ans == 'y' else False
@@ -47,8 +50,11 @@ def bet_receiver(user):
             refresh_screen()
             break
         elif prompt in bet_list:
-            user.initial_bet = bet_list[prompt]
-            break
+            if user.coins >= bet_list[prompt]:
+                user.initial_bet = bet_list[prompt]
+                break
+            else:
+                print('You cannot bet higher than your current coins.')
         else:
             print('Please enter the letter of desired amount only.')
     if not quit1:
@@ -57,10 +63,10 @@ def bet_receiver(user):
             user.reward = int(round(user.initial_bet * 1.25 * multiplier_value, 0))
         else:
             user.reward = int(round(user.initial_bet * multiplier_value, 0))
-        print(f'\n[Initial bet]: {user.initial_bet} Coins (Only this will be deducted when lost)')
+        print(f'\n[Initial bet]: {user.initial_bet} Coins (Only this will be deducted if lost)')
         print(f'[Bonus Multiplier]: {multiplier_value}X')
         print(f'[Total Reward]: {user.reward} Coins.')
-        time.sleep(4)
+        time.sleep(2.5)
     return user, quit1
 
 
@@ -71,7 +77,7 @@ def add_coins(user):
     verify_key = {'a':'alpha', 'b':'beta', 'c':'charlie', 'd':'delta', 'z':'bonus'}
     master_key = 'castillo'
     while 1:
-        prompt = input('Would you like to add coins? (Yes/No)\n> ').lower()
+        prompt = input('\nWould you like to add coins? (Yes/No)\n> ').lower()
         if prompt == 'yes' or prompt == 'y':
             while 2:
                 if user.coin_limit < 1:
@@ -128,107 +134,212 @@ def add_coins(user):
 
 
 #====================================GAME=LIST========================================
+#====================================DICE=HI=LO=======================================
+def dice_hi_lo_display(user, has_bonus, bonus):
+    print(f'[DICE HI-LO]\nWelcome {user.name}, you still have {user.coins} coins to play with this game.\n')
+    if has_bonus:
+        print(f'Total Reward: {user.reward} coins ({bonus} Bonus)')
+    elif not has_bonus:
+        print(f'Total Reward: {user.reward} coins')
+
+
+def dice_hi_lo_win(user, bonus, choice):
+    user.coins += int(user.reward * bonus[choice])
+    print('\nCongratulations!')
+    print(f'{new_balance(user.coins)}')
+    return user
+
+
+def dice_hi_lo_lost(user):
+    user.coins -= user.initial_bet
+    print('\nYou LOST!')
+    print(f'{new_balance(user.coins)}')
+    return user
+
+
+def dice_hi_lo(user):
+    while 1:
+        if user.coins <= 0:
+            break
+        else:
+            refresh_screen()
+            computer_dices = {1:random.randint(1, 6), 2:random.randint(1, 6), 3:random.randint(1, 6), 4:random.randint(1, 6)}
+            player_dices = {1:random.randint(1, 6), 2:random.randint(1, 6), 3:random.randint(1, 6), 4:random.randint(1, 6)}
+            dice_bonus = {'a':1.0, 'b':1.2, 'c':1.4, 'd':1.6}
+            dice_dict = {'a':1, 'b':2, 'c':3, 'd':4}
+            bonus_visual = {'b':'+20%', 'c':'+40%', 'd':'+60%'}
+            computer_total, player_total, user.initial_bet, user.reward = 0, 0, 0, 0
+            dice_hi_lo_display(user, False, 0)
+            user, prompt = bet_receiver(user)
+            if not prompt:
+                os.system('cls')
+                dice_hi_lo_display(user, False, 0)
+                user_choice = input('\nHow many dices would you like to play?\nA. 1 Die (No Bonus)\nB. 2 Dice (20% Bonus)\nC. 3 Dice (40% Bonus)\nD. 4 Dice (60% Bonus)\nE. Quit\n\n> ').lower()
+                user.reward = int(user.reward * dice_bonus[user_choice])
+                if user_choice == 'e':
+                    os.system('cls')
+                    break
+                elif user_choice in dice_dict:
+                    os.system('cls')
+                    dice_hi_lo_display(user, True if user_choice in bonus_visual else False, bonus_visual[user_choice] if user_choice in bonus_visual else 0 )
+                    hi_lo = input('\nDo you think you will have the higher value or lower value?\n\n(High/Low): ').lower()
+                    os.system('cls')
+                    dice_hi_lo_display(user, True if user_choice in bonus_visual else False, bonus_visual[user_choice] if user_choice in bonus_visual else 0)
+                    print(f'\n         Computer         {user.name}')
+                    for value in range(1, dice_dict[user_choice] + 1):
+                        time.sleep(1.5)
+                        print(f'        Dice {value}: {computer_dices[value]}!      Dice {value}: {player_dices[value]}!')
+                        computer_total += computer_dices[value]
+                        player_total += player_dices[value]
+                    time.sleep(1.5)
+                    print(f'\nComputer: {computer_total} Overall\n{user.name}: {player_total} Overall')
+                    time.sleep(1)
+                    if hi_lo == 'high' or hi_lo == 'hi':
+                        if player_total > computer_total:
+                            dice_hi_lo_win(user, dice_bonus, user_choice)
+                        elif player_total < computer_total:
+                            dice_hi_lo_lost(user)
+                        elif player_total == computer_total:
+                            print("It's a tie!")
+                    elif hi_lo == 'low' or hi_lo == 'lo':
+                        if player_total < computer_total:
+                            dice_hi_lo_win(user, dice_bonus, user_choice)
+                        elif player_total > computer_total:
+                            dice_hi_lo_lost(user)
+                        elif player_total == computer_total:
+                            print("It's a tie!")
+                else:
+                    print('Please enter the letter of your choice.')
+            elif prompt:
+                break
+        prompt = input('Would you like to try again? (Yes/No): ').lower()
+        if prompt == 'yes' or prompt == 'y':
+            continue
+        elif prompt == 'no' or prompt == 'n':
+            os.system('cls')
+            break
+        else:
+            print("Enter 'Yes' or 'No' only.")
+    return user
+
+
+#===================================GUESS=THE=NUMBER===================================
 def guess_the_number_display(user, secret_number, is_shown, start, end):
     print(f'[GUESS THE NUMBER!]\nWelcome {user.name}, you still have {user.coins} coins to play with this game.\n')
     if not is_shown:
-        print(f'Total Reward: {user.reward}')
+        print(f'Total Reward: {user.reward} coins')
         print(f'SECRET NUMBER: {secret_number}'.replace(str(secret_number), '##'))
         print(f'The number ranges from {start} to {end}.')
     elif is_shown:
-        print(f'Total Reward: {user.reward}')
+        print(f'Total Reward: {user.reward} coins')
         print(f'SECRET NUMBER: {secret_number}')
 
 
 
 def guess_the_number(user):
     while 1:
-        user.initial_bet, user.reward = 0, 0
-        while 1:
-            start_value = random.randint(1, 100)
-            end_value = random.randint(1, 100)
-            if end_value > start_value and end_value - start_value >= 50:
-                break
-        secret_number = random.randint(start_value, end_value)
-        guess_limit = 7
-        refresh_screen()
-        guess_the_number_display(user, secret_number, False, start_value, end_value)
-        user, prompt = bet_receiver(user)
-        if not prompt:
-            while guess_limit >= 0:
-                if guess_limit == 0:
-                    os.system('cls')
-                    guess_the_number_display(user, secret_number, True, start_value, end_value)
-                    print('\nYou ran out of guesses, YOU LOST!')
-                    user.coins -= user.initial_bet
-                    print(f'Your new balance: {user.coins} Coins')
+        if user.coins <= 0:
+            break
+        else:
+            user.initial_bet, user.reward = 0, 0
+            while 1:
+                start_value = random.randint(1, 100)
+                end_value = random.randint(1, 100)
+                if end_value > start_value and end_value - start_value >= 50:
                     break
-                else:
-                    os.system('cls')
-                    guess_the_number_display(user, secret_number, False, start_value, end_value)
-                    print(f'Number of tries: {guess_limit} guess left.')
-                    user_guess = int(input('\nEnter your guess: '))
-                    if user_guess != secret_number and guess_limit != 0:
-                        if 0 < user_guess < 101:
-                            if secret_number < user_guess:
-                                print('Computer says: Lower!')
-                                guess_limit -= 1
-                                time.sleep(1)
-                            elif secret_number > user_guess:
-                                print('Computer says: Higher!')
-                                guess_limit -=1
-                                time.sleep(1)
-                        else:
-                            print('Enter an integer from 1 to 100 only.')
-                            time.sleep(2)
-                    elif user_guess == secret_number:
+            secret_number = random.randint(start_value, end_value)
+            guess_limit = 7
+            refresh_screen()
+            guess_the_number_display(user, secret_number, False, start_value, end_value)
+            user, prompt = bet_receiver(user)
+            if not prompt:
+                while guess_limit >= 0:
+                    if guess_limit == 0:
                         os.system('cls')
                         guess_the_number_display(user, secret_number, True, start_value, end_value)
-                        print('\n\nCongratulations!')
-                        user.coins += user.reward
-                        print(f'Your new balance: {user.coins} Coins')
+                        print('\nYou ran out of guesses, YOU LOST!')
+                        user.coins -= user.initial_bet
+                        print(f'{new_balance(user.coins)}')
                         break
+                    else:
+                        os.system('cls')
+                        guess_the_number_display(user, secret_number, False, start_value, end_value)
+                        print(f'Number of tries: {guess_limit} guess left.')
+                        try:
+                            user_guess = int(input('\nEnter your guess: '))
+                            if user_guess != secret_number and guess_limit != 0:
+                                if start_value <= user_guess <= end_value:
+                                    if secret_number < user_guess:
+                                        print('Computer says: Lower!')
+                                        guess_limit -= 1
+                                        time.sleep(1)
+                                    elif secret_number > user_guess:
+                                        print('Computer says: Higher!')
+                                        guess_limit -=1
+                                        time.sleep(1)
+                                else:
+                                    print(f'Enter an integer from {start_value} to {end_value} only.')
+                                    time.sleep(2)
+                            elif user_guess == secret_number:
+                                os.system('cls')
+                                guess_the_number_display(user, secret_number, True, start_value, end_value)
+                                print('\n\nCongratulations!')
+                                user.coins += user.reward
+                                print(f'{new_balance(user.coins)}')
+                                break
+                        except ValueError:
+                            print('Please enter a valid integer.')
+                            time.sleep(1)
 
-            prompt = input('Would you like to try again? (Yes/No): ').lower()
-            if prompt == 'yes' or prompt == 'y':
-                continue
-            elif prompt == 'no' or prompt == 'n':
+                prompt = input('Would you like to try again? (Yes/No): ').lower()
+                if prompt == 'yes' or prompt == 'y':
+                    continue
+                elif prompt == 'no' or prompt == 'n':
+                    os.system('cls')
+                    break
+                else:
+                    print("Enter 'Yes' or 'No' only.")
+            elif prompt:
                 break
-        elif prompt:
-            break
     return user
 
 
-#===================================LAST=SECTION======================================
+#======================================LAST=SECTION=========================================
 def initial_menu(user):
     while True:
-        user.initiate_name()
-        review_coins(user)
-        game_choice = input('====================[MAIN MENU]====================\nChoose a game:\nA. Guess the number      D. (unavailable)\nB. Dice (Hi-Lo)          E. Add Coins (requires master key)\nC. (unavailable)         F. Quit\n\n> ').lower()
-        if game_choice == 'a':
-            guess_the_number(user)
-        elif game_choice == 'b':
-            pass
-        elif game_choice == 'c':
-            pass
-        elif game_choice == 'd':
-            pass
-        elif game_choice == 'e':
-            if user.coin_limit >= 1:
-                add_coins(user)
-            elif user.coin_limit < 1:
-                print('You have already reached your add-coins limit.')
-                time.sleep(1)
-                refresh_screen()
-        elif game_choice == 'f':
-            last_prompt = input('Are you sure? (All your data will be lost.)\n(Yes/No): ').lower()
-            if last_prompt == 'yes' or last_prompt == 'y':
-                quit()
-            else:
-                os.system('cls')
+        if user.coins <= 0:
+            print('\n\nYou do not have enough coins to play. Please contact developer to buy more coins.')
+            time.sleep(5)
+            quit()
         else:
-            print('Enter the letter of desired option only.')
-            time.sleep(1.5)
-            refresh_screen()
+            user.initiate_name()
+            review_coins(user)
+            game_choice = input('====================[MAIN MENU]====================\nChoose a game:\nA. Guess The Number      D. (unavailable)\nB. Dice (Hi-Lo)          E. Add Coins (requires master key)\nC. (unavailable)         F. Quit\n\n> ').lower()
+            if game_choice == 'a':
+                guess_the_number(user)
+            elif game_choice == 'b':
+                dice_hi_lo(user)
+            elif game_choice == 'c':
+                pass
+            elif game_choice == 'd':
+                pass
+            elif game_choice == 'e':
+                if user.coin_limit >= 1:
+                    add_coins(user)
+                elif user.coin_limit < 1:
+                    print('You have already reached your add-coins limit.')
+                    time.sleep(1)
+                    refresh_screen()
+            elif game_choice == 'f':
+                last_prompt = input('Are you sure? (All your data will be lost.)\n(Yes/No): ').lower()
+                if last_prompt == 'yes' or last_prompt == 'y':
+                    quit()
+                else:
+                    os.system('cls')
+            else:
+                print('Enter the letter of desired option only.')
+                time.sleep(1.5)
+                refresh_screen()
 
 
 def initiate_game():
@@ -279,7 +390,7 @@ def initiate_game():
                 print('This game is intended for users with the age of 18 or above.')
                 quit()
         except ValueError:
-            print('Enter your age in numbers only.\n')
+            print('Please enter integers only.\n')
 
 
 initiate_game()
