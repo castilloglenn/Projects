@@ -1,0 +1,285 @@
+import random, getpass, os, time
+
+
+class UserInfo:
+    def __init__(self, name, age, coins, user_type, coin_limit, initial_bet, reward):
+        self.name = name
+        self.age = age
+        self.coins = coins
+        self.user_type = user_type
+        self.coin_limit = coin_limit
+        self.initial_bet = initial_bet
+        self.reward = reward
+
+    def initiate_name(self):
+        print(f'Hello {self.name}, welcome to Casino.')
+
+
+#======================================UTILITIES=====================================
+def refresh_screen():
+    os.system('cls')
+    time.sleep(0.3)
+
+
+def review_coins(user):
+    print(f'Coins: {user.coins} ({user.user_type})')
+
+
+def password_wrong(name):
+    user_ans = input(f'You have entered the wrong {name} key.\nWould you like to try again? (Yes/No)\n> ').lower()
+    return True if user_ans == 'yes' or user_ans == 'y' else False
+
+
+def password_validator(name, password):
+    verification = getpass.getpass(prompt=f'Enter the {name} key: ').lower()
+    is_matched = True if verification == password else False
+    return is_matched
+
+
+def bet_receiver(user):
+    quit1 = False
+    bet_list = {'a':10, 'b':25, 'c':50, 'd':100, 'e':user.coins}
+    multiplier = {1:1.1, 2:1.2, 3:1.3, 4:1.4, 5:1.5}
+    while 1:
+        prompt = input('\nTo begin, choose your bet:\nA. 10 Coins\nB. 25 Coins\nC. 50 Coins\nD. 100 Coins\nE. All IN! (+25% if won)\nF. Quit\n\n> ').lower()
+        if prompt == 'f':
+            quit1 = True
+            refresh_screen()
+            break
+        elif prompt in bet_list:
+            user.initial_bet = bet_list[prompt]
+            break
+        else:
+            print('Please enter the letter of desired amount only.')
+    if not quit1:
+        multiplier_value = multiplier[random.randint(1, 5)]
+        if prompt == 'e':
+            user.reward = int(round(user.initial_bet * 1.25 * multiplier_value, 0))
+        else:
+            user.reward = int(round(user.initial_bet * multiplier_value, 0))
+        print(f'\n[Initial bet]: {user.initial_bet} Coins (Only this will be deducted when lost)')
+        print(f'[Bonus Multiplier]: {multiplier_value}X')
+        print(f'[Total Reward]: {user.reward} Coins.')
+        time.sleep(4)
+    return user, quit1
+
+
+
+#=====================================ADD=COINS====================================
+def add_coins(user):
+    coins_list = {'a':50, 'b':100, 'c':250, 'd':500, 'z':1000}
+    verify_key = {'a':'alpha', 'b':'beta', 'c':'charlie', 'd':'delta', 'z':'bonus'}
+    master_key = 'castillo'
+    while 1:
+        prompt = input('Would you like to add coins? (Yes/No)\n> ').lower()
+        if prompt == 'yes' or prompt == 'y':
+            while 2:
+                if user.coin_limit < 1:
+                    print('You have already reached your add-coins limit.')
+                    break
+                elif user.coin_limit >= 1:
+                    verification = password_validator('master', master_key)
+                    if verification:
+                        time.sleep(1)
+                        print(f'\nSuccessful!')
+                        time.sleep(0.3)
+                        refresh_screen()
+                        while 3:
+                            addition = input('\nNow enter how many coins would you like to add:\nA. 50 Coins\nB. 100 Coins\nC. 250 Coins\nD. 500 Coins\n> ').lower()
+                            if addition in coins_list:
+                                verify = getpass.getpass(prompt='Enter verification key: ').lower()
+                                if verify == verify_key[addition]:
+                                    time.sleep(1)
+                                    print('Successful!')
+                                    time.sleep(0.3)
+                                    if user.user_type == 'Normal User':
+                                        user.coins += coins_list[addition]
+                                        print(f'Your new coin balance is {user.coins}.\n')
+                                        user.coin_limit -= 1
+                                        break
+                                    elif user.user_type == 'Premium User':
+                                        user.coins += int(coins_list[addition] * 1.5)
+                                        print(f'Your new coin balance is {user.coins} (+50% Premium Bonus).\n')
+                                        user.coin_limit -= 1
+                                        break
+                                else:
+                                    time.sleep(1)
+                                    prompt = password_wrong('master')
+                                    if prompt:
+                                        continue
+                                    else:
+                                        break
+                            else:
+                                print('Please enter the letter of desired value only.')
+                        break
+                    else:
+                        prompt = password_wrong('master')
+                        if prompt:
+                            continue
+                        else:
+                            break
+        elif prompt == 'no' or prompt == 'n':
+            break
+        else:
+            print("Enter 'Yes' or 'No' only.")
+    print(f'Coin Balance: {user.coins}')
+    refresh_screen()
+    return user
+
+
+#====================================GAME=LIST========================================
+def guess_the_number_display(user, secret_number, is_shown, start, end):
+    print(f'[GUESS THE NUMBER!]\nWelcome {user.name}, you still have {user.coins} coins to play with this game.\n')
+    if not is_shown:
+        print(f'Total Reward: {user.reward}')
+        print(f'SECRET NUMBER: {secret_number}'.replace(str(secret_number), '##'))
+        print(f'The number ranges from {start} to {end}.')
+    elif is_shown:
+        print(f'Total Reward: {user.reward}')
+        print(f'SECRET NUMBER: {secret_number}')
+
+
+
+def guess_the_number(user):
+    while 1:
+        user.initial_bet, user.reward = 0, 0
+        while 1:
+            start_value = random.randint(1, 100)
+            end_value = random.randint(1, 100)
+            if end_value > start_value and end_value - start_value >= 50:
+                break
+        secret_number = random.randint(start_value, end_value)
+        guess_limit = 7
+        refresh_screen()
+        guess_the_number_display(user, secret_number, False, start_value, end_value)
+        user, prompt = bet_receiver(user)
+        if not prompt:
+            while guess_limit >= 0:
+                if guess_limit == 0:
+                    os.system('cls')
+                    guess_the_number_display(user, secret_number, True, start_value, end_value)
+                    print('\nYou ran out of guesses, YOU LOST!')
+                    user.coins -= user.initial_bet
+                    print(f'Your new balance: {user.coins} Coins')
+                    break
+                else:
+                    os.system('cls')
+                    guess_the_number_display(user, secret_number, False, start_value, end_value)
+                    print(f'Number of tries: {guess_limit} guess left.')
+                    user_guess = int(input('\nEnter your guess: '))
+                    if user_guess != secret_number and guess_limit != 0:
+                        if 0 < user_guess < 101:
+                            if secret_number < user_guess:
+                                print('Computer says: Lower!')
+                                guess_limit -= 1
+                                time.sleep(1)
+                            elif secret_number > user_guess:
+                                print('Computer says: Higher!')
+                                guess_limit -=1
+                                time.sleep(1)
+                        else:
+                            print('Enter an integer from 1 to 100 only.')
+                            time.sleep(2)
+                    elif user_guess == secret_number:
+                        os.system('cls')
+                        guess_the_number_display(user, secret_number, True, start_value, end_value)
+                        print('\n\nCongratulations!')
+                        user.coins += user.reward
+                        print(f'Your new balance: {user.coins} Coins')
+                        break
+
+            prompt = input('Would you like to try again? (Yes/No): ').lower()
+            if prompt == 'yes' or prompt == 'y':
+                continue
+            elif prompt == 'no' or prompt == 'n':
+                break
+        elif prompt:
+            break
+    return user
+
+
+#===================================LAST=SECTION======================================
+def initial_menu(user):
+    while True:
+        user.initiate_name()
+        review_coins(user)
+        game_choice = input('====================[MAIN MENU]====================\nChoose a game:\nA. Guess the number      D. (unavailable)\nB. Dice (Hi-Lo)          E. Add Coins (requires master key)\nC. (unavailable)         F. Quit\n\n> ').lower()
+        if game_choice == 'a':
+            guess_the_number(user)
+        elif game_choice == 'b':
+            pass
+        elif game_choice == 'c':
+            pass
+        elif game_choice == 'd':
+            pass
+        elif game_choice == 'e':
+            if user.coin_limit >= 1:
+                add_coins(user)
+            elif user.coin_limit < 1:
+                print('You have already reached your add-coins limit.')
+                time.sleep(1)
+                refresh_screen()
+        elif game_choice == 'f':
+            last_prompt = input('Are you sure? (All your data will be lost.)\n(Yes/No): ').lower()
+            if last_prompt == 'yes' or last_prompt == 'y':
+                quit()
+            else:
+                os.system('cls')
+        else:
+            print('Enter the letter of desired option only.')
+            time.sleep(1.5)
+            refresh_screen()
+
+
+def initiate_game():
+    while 1:
+        try:
+            user_age = int(input('Enter your age: '))
+            if 18 <= user_age <= 100:
+                subscription_key = 'glenn'
+                while 2:
+                    user_name = input('Enter your name: ')
+                    if user_name == '':
+                        print('Do not leave the field "Name" empty.')
+                    else:
+                        break
+                user_coins = 0
+                user_type = input('\nEnter your subscription:\nA. Premium User\nB. Normal User\n> ').lower()
+                if user_type == 'a':
+                    while 3:
+                        verification = password_validator('subscription', subscription_key)
+                        if verification:
+                            time.sleep(1)
+                            print(f'\nSuccessful!')
+                            time.sleep(0.3)
+                            refresh_screen()
+                            user_type = 'Premium User'
+                            user_coins += 250
+                            break
+                        else:
+                            time.sleep(1)
+                            prompt = password_wrong('subscription')
+                            if prompt:
+                                continue
+                            else:
+                                user_type = 'Normal User'
+                                user_coins += 100
+                                break
+                elif user_type == 'b':
+                    user_type = 'Normal User'
+                    user_coins += 100
+                refresh_screen()
+                addition_limiter = 1
+                user1 = UserInfo(user_name, user_age, user_coins, user_type, addition_limiter, 0, 0)
+                while True:
+                    initial_menu(user1)
+            elif user_age > 100:
+                print('You seemed too impossible to be alive.')
+            else:
+                print('This game is intended for users with the age of 18 or above.')
+                quit()
+        except ValueError:
+            print('Enter your age in numbers only.\n')
+
+
+initiate_game()
