@@ -201,9 +201,9 @@ def dice_hi_lo_display(user, has_bonus, bonus):
 
 
 def dice_hi_lo_win(user, bonus, choice):
-    user.coins += int(user.reward * bonus[choice])
+    user.coins += round(user.reward * bonus[choice], 0)
     print('\nCongratulations!')
-    print(f'{new_balance(user.coins)}')
+    print(f'{int(new_balance(user.coins))}')
     return user
 
 
@@ -561,3 +561,90 @@ def initial_screen():
 
 
 initial_screen()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#==================================RECYCLE=BIN=============================================================
+# while 1:
+#     try:
+#         # GET AGE FROM USER
+#         user_age = int(input('       [CASINO]\n    [REGISTRATION]\nEnter your age: '))
+#         # CONSTRAINTS
+#         if 18 <= user_age <= 100:
+#             # PASSWORD
+#             subscription_key = 'glenn'
+#             while 2:
+#                 # GET NAME
+#                 user_name = input('Enter your name: ')
+#                 # CONSTRAINTS
+#                 if user_name == '':
+#                     print('Do not leave the field "Name" empty.')
+#                 else:
+#                     user_coins = 100
+#                     user_type = 'Normal User'
+#                     while 3:
+#                         # GET SUBSCRIPTION
+#                         subscription = input('\nEnter your subscription:\nA. Premium User\nB. Normal User\n> ').lower()
+#                         if subscription == 'a':
+#                             while 4:
+#                                 # VALIDATION
+#                                 verification = password_validator('subscription', subscription_key)
+#                                 if verification:
+#                                     time.sleep(1)
+#                                     print(f'\nSuccessful!')
+#                                     time.sleep(1)
+#                                     refresh_screen()
+#                                     user_type = 'Premium User'
+#                                     user_coins = 250
+#                                     break
+#                                 elif not verification:
+#                                     time.sleep(1)
+#                                     prompt = password_wrong('subscription')
+#                                     if prompt:
+#                                         continue
+#                                     else:
+#                                         break
+#                             break
+#                         elif subscription == 'b':
+#                             break
+#                         else:
+#                             print('Enter the letter of your subscription.')
+#                     addition_limiter = 1
+#                     # REGISTER
+#                     user1 = UserInfo(user_name, user_age, user_coins, user_type, addition_limiter, 0, 0)
+#                     os.system('cls')
+#                     # INITIATE
+#                     initial_menu(user1)
+#         elif user_age > 100:
+#             print('You seemed too impossible to be alive.')
+#         else:
+#             print('This game is intended for users with the age of 18 or above.')
+#             quit()
+#     except ValueError:
+#         print('Please enter integers only.\n')
+#============================================================================================================
