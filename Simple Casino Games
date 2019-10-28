@@ -55,6 +55,15 @@ def get_data(name, password):
             time.sleep(1)
 
 
+def check_data(name):
+    c.execute(f"SELECT * FROM Accounts WHERE name = '{name}'")
+    data3 = c.fetchone()
+    if data3 is None:
+        return True
+    else:
+        return False
+
+
 def save_data(user):
     c.execute('UPDATE Accounts SET coins = ?, coin_limit = ? WHERE name = ?', (user.coins, user.coin_limit, user.name))
     conn.commit()
@@ -430,7 +439,12 @@ def get_name():
         registration_banner()
         name = input('\nThe username must be 3 to 10 alphanumeric characters and no spaces.\nEnter your username: ')
         if 3 <= len(name) <= 10 and ' ' not in name:
-            return name
+            verifier = check_data(name)
+            if verifier:
+                return name
+            if not verifier:
+                print('Username already exists.')
+                time.sleep(1)
         else:
             continue
 
@@ -561,90 +575,3 @@ def initial_screen():
 
 
 initial_screen()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#==================================RECYCLE=BIN=============================================================
-# while 1:
-#     try:
-#         # GET AGE FROM USER
-#         user_age = int(input('       [CASINO]\n    [REGISTRATION]\nEnter your age: '))
-#         # CONSTRAINTS
-#         if 18 <= user_age <= 100:
-#             # PASSWORD
-#             subscription_key = 'glenn'
-#             while 2:
-#                 # GET NAME
-#                 user_name = input('Enter your name: ')
-#                 # CONSTRAINTS
-#                 if user_name == '':
-#                     print('Do not leave the field "Name" empty.')
-#                 else:
-#                     user_coins = 100
-#                     user_type = 'Normal User'
-#                     while 3:
-#                         # GET SUBSCRIPTION
-#                         subscription = input('\nEnter your subscription:\nA. Premium User\nB. Normal User\n> ').lower()
-#                         if subscription == 'a':
-#                             while 4:
-#                                 # VALIDATION
-#                                 verification = password_validator('subscription', subscription_key)
-#                                 if verification:
-#                                     time.sleep(1)
-#                                     print(f'\nSuccessful!')
-#                                     time.sleep(1)
-#                                     refresh_screen()
-#                                     user_type = 'Premium User'
-#                                     user_coins = 250
-#                                     break
-#                                 elif not verification:
-#                                     time.sleep(1)
-#                                     prompt = password_wrong('subscription')
-#                                     if prompt:
-#                                         continue
-#                                     else:
-#                                         break
-#                             break
-#                         elif subscription == 'b':
-#                             break
-#                         else:
-#                             print('Enter the letter of your subscription.')
-#                     addition_limiter = 1
-#                     # REGISTER
-#                     user1 = UserInfo(user_name, user_age, user_coins, user_type, addition_limiter, 0, 0)
-#                     os.system('cls')
-#                     # INITIATE
-#                     initial_menu(user1)
-#         elif user_age > 100:
-#             print('You seemed too impossible to be alive.')
-#         else:
-#             print('This game is intended for users with the age of 18 or above.')
-#             quit()
-#     except ValueError:
-#         print('Please enter integers only.\n')
-#============================================================================================================
