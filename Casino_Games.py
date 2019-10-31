@@ -48,8 +48,8 @@ def get_data(name, password):
     c.execute(f"SELECT * FROM Accounts WHERE name = '{name}'")
     data2 = c.fetchone()
     if data2 is None:
-        print(f"\n                        User {name} does not exist.")
-        time.sleep(1)
+        print(f"\n                 User {name} does not exist. (Username is case-sensitive)")
+        time.sleep(3)
     elif name == data2[0]:
         if password == data2[2]:
             return data2
@@ -240,9 +240,10 @@ def dice_hi_lo_win(user, bonus, choice):
 
 
 def dice_hi_lo_lost(user):
+    high_bid_update(user)
     user.coins -= user.initial_bet
     print('\nYou LOST!')
-    print(f'{int(new_balance(user.coins))}')
+    print(f'{new_balance(user.coins)}')
     return user
 
 
@@ -489,11 +490,12 @@ def high_score_ui():
         else:
             for i in range(len(bankrupt_data) if len(bankrupt_data) <= 5 else 5):
                 print(f'                         {i + 1}. {bankrupt_data[i][0]}')
-        prompt = input('\n                     Return to main page?\n                   "Yes" or else will Refresh\n                        >  ')
+        print("           ============================================")
+        prompt = input('                     Return to main page?\n                        >  ')
         if prompt == 'yes' or prompt == 'y':
             break
         else:
-            print('Refreshing the list...')
+            print('                     Refreshing the list...')
             time.sleep(1)
 
 
@@ -659,11 +661,11 @@ def initial_screen():
            #==========================================#
                 
                 
-                       Do you have an account?
-                         Yes - User Login
-                         No - Registration
-                         C - Check Richest Users
-                         Quit - Exit App
+                    Do you have an account?
+                       Yes - User Login
+                       No - Registration
+                       C - Check Richest Users
+                       Quit - Exit App
                         
                         
                             > """).lower()
