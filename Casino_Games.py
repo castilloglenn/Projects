@@ -231,7 +231,7 @@ def dice_hi_lo_display(user, has_bonus, bonus):
 
 def dice_hi_lo_win(user, bonus, choice):
     user.coins += round(user.reward * bonus[choice], 0)
-    print('\nCongratulations!')
+    print('Congratulations!')
     print(f'{new_balance(user.coins)}')
     high_coin_update(user)
     return user
@@ -240,7 +240,7 @@ def dice_hi_lo_win(user, bonus, choice):
 def dice_hi_lo_lost(user):
     high_bid_update(user)
     user.coins -= user.initial_bet
-    print('\nYou LOST!')
+    print('You LOST!')
     print(f'{new_balance(user.coins)}')
     return user
 
@@ -283,8 +283,9 @@ def dice_hi_lo(user):
                                 computer_total += computer_dices[value]
                                 player_total += player_dices[value]
                             time.sleep(1.5)
-                            print(f'\nComputer: {computer_total} Overall\n{user.name}: {player_total} Overall')
+                            print(f'\n        Computer: {computer_total}    {user.name}: {player_total}')
                             time.sleep(1)
+                            print(f'\nYour bet: {hi_lo.upper()}')
                             if hi_lo == 'high' or hi_lo == 'hi':
                                 if player_total > computer_total:
                                     dice_hi_lo_win(user, dice_bonus, user_choice)
@@ -463,7 +464,7 @@ def high_score_ui():
         else:
             for i in range(len(high_score_data) if len(high_score_data) <= 5 else 5):
                 print(f'                         {i + 1}. {high_score_data[i][1]:,} - {high_score_data[i][0]}')
-        print('\n                      Highest Coins Achieved')
+        print('\n                        Highest Coins Achieved')
         c.execute("SELECT name, highest_coin FROM Leaderboard WHERE name != 'Administrator' ORDER BY highest_coin DESC")
         highest_coins_data = c.fetchall()
         if not highest_coins_data:
@@ -490,6 +491,7 @@ def high_score_ui():
         print("           ============================================")
         prompt = input('                     Return to main page?\n                        >  ')
         if prompt == 'yes' or prompt == 'y':
+            os.system('cls')
             break
         else:
             print('                     Refreshing the list...')
