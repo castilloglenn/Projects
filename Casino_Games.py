@@ -113,7 +113,7 @@ def bet_receiver(user):
     quit1 = False
     bet_list = {'a':10, 'b':25, 'c':50, 'd':100, 'e':round(user.coins*0.5, 0), 'f':user.coins}
     multiplier = {1:1.1, 2:1.2, 3:1.3, 4:1.4, 5:1.5}
-    additional = {'e':'10%', 'f':'25%'}
+    additional = {'e':'(+10%)', 'f':'(+25%)'}
     while 1:
         prompt = input('\nTo begin, choose your bet:\nA. 10 Coins       E. Half of my coins! (+10% Bonus)\nB. 25 Coins       F. All IN! (+25% Bonus)\nC. 50 Coins       G. Quit\nD. 100 Coins\n\n> ').lower()
         if prompt == 'g':
@@ -140,7 +140,7 @@ def bet_receiver(user):
         time.sleep(0.5)
         print(f'[Bonus Multiplier]: {multiplier_value}X')
         time.sleep(0.5)
-        print(f'[Total Reward]: {user.reward:,} Coins (+{additional[prompt]})')
+        print(f"[Total Reward]: {user.reward:,} Coins {additional[prompt] if prompt in additional else ''}")
         time.sleep(1.5)
         high_bid_update(user)
     return user, quit1
