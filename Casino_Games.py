@@ -12,9 +12,6 @@ class UserInfo:
         self.initial_bet = initial_bet
         self.reward = reward
 
-    def initiate_name(self):
-        print(f"Hello {self.name}.")
-
 
 #======================================DATABASE======================================
 conn = sqlite3.connect('lib.db')
@@ -156,7 +153,7 @@ def add_coins(user):
     verify_key = {'a':'alpha', 'b':'beta', 'c':'charlie', 'd':'delta', 'z':'bonus'}
     master_key = 'castillo'
     while 1:
-        display_status(user.name, user.age, user.coins, user.user_type, user.coin_limit, user.password)
+        display_status(user)
         print('==============================[ADD=COINS]=============================')
         prompt = input('\nWould you like to add coins? (Yes/No)\n> ').lower()
         if prompt == 'yes' or prompt == 'y':
@@ -165,7 +162,7 @@ def add_coins(user):
                     print('You have already reached your add-coins limit.')
                     break
                 elif user.coin_limit >= 1:
-                    display_status(user.name, user.age, user.coins, user.user_type, user.coin_limit, user.password)
+                    display_status(user)
                     print('==============================[ADD=COINS]=============================')
                     verification = password_validator('master', master_key)
                     if verification:
@@ -174,7 +171,7 @@ def add_coins(user):
                         time.sleep(0.3)
                         refresh_screen()
                         while 3:
-                            display_status(user.name, user.age, user.coins, user.user_type, user.coin_limit, user.password)
+                            display_status(user)
                             print('==============================[ADD=COINS]=============================')
                             addition = input('\nNow enter how many coins would you like to add:\nA. 50 Coins\nB. 100 Coins\nC. 250 Coins\nD. 500 Coins\n> ').lower()
                             if addition in coins_list:
@@ -413,7 +410,7 @@ def initial_menu(user):
             time.sleep(5)
             break
         else:
-            display_status(user.name, user.age, user.coins, user.user_type, user.coin_limit, user.password)
+            display_status(user)
             game_choice = input('==============================[MAIN=MENU]=============================\n   Choose a game:\n    A. Guess The Number      D. (unavailable)\n    B. Dice (Hi-Lo)          E. Add Coins (requires master key)\n    C. (unavailable)         F. Log out\n\n> ').lower()
             if game_choice == 'a':
                 guess_the_number(user)
@@ -500,18 +497,91 @@ def high_score_ui():
 
 
 #======================================ADMINISTRATIVE=UI==============================================
+def admin_manage_accounts():
+    pass
+
+
+def admin_add_coins():
+    pass
+
+
+def admin_add_coin_limit():
+    pass
+
+
+def admin_change_subscription():
+    pass
+
+
+def admin_ban_players():
+    pass
+
+
+def admin_reset_database():
+    pass
+
+
+def admin_ui(user):
+    while True:
+        if user.coins <= 0 and user.coin_limit <= 0:
+            print('\n\n You do not have enough coins to play. Please contact developer to buy more coins.')
+            time.sleep(5)
+            break
+        else:
+            display_status(user)
+            print('==============================[MAIN=MENU]=============================\n   Choose a game:\n    A. Guess The Number      D. (unavailable)\n    B. Dice (Hi-Lo)          E. Add Coins (requires master key)\n    C. (unavailable)         F. Log out')
+            game_choice = input('\n==============================[ADMIN=UI]==============================\n\n    1. Manage Accounts       4. Change Subscription\n    2. Add Coins             5. Ban Players\n    3. Add Coin-Limit        6. Reset Database\n\n> ')
+            if game_choice == 'a':
+                guess_the_number(user)
+            elif game_choice == 'b':
+                dice_hi_lo(user)
+            elif game_choice == 'c':
+                pass
+            elif game_choice == 'd':
+                pass
+            elif game_choice == 'e':
+                if user.coin_limit >= 1:
+                    add_coins(user)
+                elif user.coin_limit < 1:
+                    print('You have already reached your add-coins limit.')
+                    time.sleep(1)
+            elif game_choice == 'f':
+                last_prompt = input('Are you sure? (Your data will be saved.)\n(Yes/No): ').lower()
+                if last_prompt == 'yes' or last_prompt == 'y':
+                    print('Returning to log-in screen...')
+                    time.sleep(1)
+                    save_data(user)
+                    break
+                else:
+                    os.system('cls')
+            elif game_choice == '1':
+                admin_manage_accounts()
+            elif game_choice == '2':
+                admin_add_coins()
+            elif game_choice == '3':
+                admin_add_coin_limit()
+            elif game_choice == '4':
+                admin_change_subscription()
+            elif game_choice == '5':
+                admin_ban_players()
+            elif game_choice == '6':
+                admin_reset_database()
+            else:
+                print('Enter the letter of desired option only.')
+                time.sleep(1.5)
+                refresh_screen()
 
 
 #=======================================LOG=IN=INTERFACE===============================================
-def display_status(name, age, coins, user_type, coin_limit, password):
+def display_status(user):
     os.system('cls')
     print(f"""===============================[STATUS]===============================
-        Username: {name}
-        Age: {age}
-        Subscription: {user_type}
-        Coins: {int(coins):,}
-        Number of times to buy coins: {coin_limit}
-        Password: {'*' * len(password)}""")
+        Username: {user.name}
+        Age: {user.age}
+        Subscription: {user.user_type}
+        Coins: {int(user.coins):,}
+        Number of times to buy coins: {user.coin_limit}
+        Password: {'*' * len(user.password)}""")
 
 
 def registration_banner():
@@ -674,7 +744,10 @@ def initial_screen():
                             > """).lower()
         if prompt == 'yes' or prompt == 'y':
             user = login()
-            initial_menu(user)
+            if user.name == 'Administrator':
+                admin_ui(user)
+            else:
+                initial_menu(user)
         elif prompt == 'no' or prompt == 'n':
             registration_menu()
         elif prompt == 'c' or prompt == 'check':
