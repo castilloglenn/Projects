@@ -116,6 +116,7 @@ def bet_receiver(user):
     quit1 = False
     bet_list = {'a':10, 'b':25, 'c':50, 'd':100, 'e':round(user.coins*0.5, 0), 'f':user.coins}
     multiplier = {1:1.1, 2:1.2, 3:1.3, 4:1.4, 5:1.5}
+    additional = {'e':'10%', 'f':'25%'}
     while 1:
         prompt = input('\nTo begin, choose your bet:\nA. 10 Coins       E. Half of my coins! (+10% Bonus)\nB. 25 Coins       F. All IN! (+25% Bonus)\nC. 50 Coins       G. Quit\nD. 100 Coins\n\n> ').lower()
         if prompt == 'g':
@@ -142,7 +143,7 @@ def bet_receiver(user):
         time.sleep(0.5)
         print(f'[Bonus Multiplier]: {multiplier_value}X')
         time.sleep(0.5)
-        print(f'[Total Reward]: {user.reward:,} Coins')
+        print(f'[Total Reward]: {user.reward:,} Coins (+{additional[prompt]})')
         time.sleep(1.5)
         high_bid_update(user)
     return user, quit1
@@ -428,7 +429,6 @@ def initial_menu(user):
                 elif user.coin_limit < 1:
                     print('You have already reached your add-coins limit.')
                     time.sleep(1)
-                    refresh_screen()
             elif game_choice == 'f':
                 last_prompt = input('Are you sure? (Your data will be saved.)\n(Yes/No): ').lower()
                 if last_prompt == 'yes' or last_prompt == 'y':
@@ -499,6 +499,9 @@ def high_score_ui():
             time.sleep(1)
 
 
+#======================================ADMINISTRATIVE=UI==============================================
+
+
 #=======================================LOG=IN=INTERFACE===============================================
 def display_status(name, age, coins, user_type, coin_limit, password):
     os.system('cls')
@@ -508,7 +511,7 @@ def display_status(name, age, coins, user_type, coin_limit, password):
         Subscription: {user_type}
         Coins: {int(coins):,}
         Number of times to buy coins: {coin_limit}
-        Password: {password}""")
+        Password: {'*' * len(password)}""")
 
 
 def registration_banner():
@@ -523,7 +526,7 @@ def reg_status(name, age, coins, user_type, coin_limit, password):
         Subscription: {user_type}
         Coins: {'' if isinstance(coins, str) else int(round(coins, 0))}
         Number of times to buy coins: {coin_limit}
-        Password: {password}""")
+        Password: {'*' * len(password)}""")
 
 
 def get_name():
@@ -664,7 +667,7 @@ def initial_screen():
                     Do you have an account?
                        Yes - User Login
                        No - Registration
-                       C - Check Richest Users
+                       C - Check Leaderboard
                        Quit - Exit App
                         
                         
