@@ -4,7 +4,7 @@ from tkinter import messagebox
 # ===================================================DECLARATION=======================================================
 root = tk.Tk()
 root.title('For BSIT-1D')
-root.geometry('415x260')
+root.geometry('415x260+750+350')
 root.resizable(0, 0)
 
 steps_input = tk.StringVar()
