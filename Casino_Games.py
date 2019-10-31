@@ -509,10 +509,10 @@ def admin_manage_accounts():
     while 1:
         refresh_screen()
         admin_banner()
-        while 2:
-            choice = input("A. VIEW LIST OF ACCOUNTS\nB. DELETE ACCOUNT\nC. BACK\n\n> ").lower()
-            if choice == 'a':
-                refresh_screen()
+        choice = input("A. VIEW DATABASE\nB. DELETE ACCOUNT\nC. BACK\n\n> ").lower()
+        if choice == 'a':
+            while 2:
+                os.system('cls')
                 admin_banner()
                 c.execute("SELECT * FROM Accounts WHERE name != 'Administrator'")
                 list_account = c.fetchall()
@@ -527,6 +527,54 @@ def admin_manage_accounts():
                     break
                 else:
                     continue
+        elif choice == 'b':
+            while 2:
+                os.system('cls')
+                admin_banner()
+                master_key = 'delete'
+                input_name = input('ENTER THE NAME: ')
+                c.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
+                del_data = c.fetchone()
+                if del_data is None:
+                    print(f'\nUSER {input_name} DOES NOT EXIST.')
+                    prompt = input('Would you like to try again?\n').lower()
+                    if prompt == 'yes' or prompt == 'y':
+                        continue
+                    elif prompt == 'no' or prompt == 'n':
+                        break
+                    else:
+                        print('YES or NO only.')
+                else:
+                    while 3:
+                        os.system('cls')
+                        admin_banner()
+                        last_chance = input('ARE YOU SURE?\n> ').lower()
+                        if last_chance == 'y' or last_chance == 'yes':
+                            validator = getpass.getpass(prompt='\nEnter the verifier key: ').lower()
+                            if validator == master_key:
+                                print('Passwords matched!')
+                                time.sleep(1)
+                                print('Deleting User...')
+                                c.execute(f"DELETE FROM Accounts WHERE name == '{input_name}'")
+                                conn.commit()
+                                time.sleep(1)
+                                break
+                            else:
+                                prompt = input('\nPassword not matched.\nWould you like to try again?\n').lower()
+                                if prompt == 'yes' or prompt == 'y':
+                                    continue
+                                elif prompt == 'no' or prompt == 'n':
+                                    break
+                                else:
+                                    print('YES or NO only.')
+                        elif last_chance == 'n' or last_chance == 'no':
+                            break
+                        else:
+                            print('YES or NO only.')
+        elif choice == 'c':
+            break
+        else:
+            continue
 
 
 
