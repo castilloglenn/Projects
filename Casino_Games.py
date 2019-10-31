@@ -499,8 +499,35 @@ def high_score_ui():
 
 
 #======================================ADMINISTRATIVE=UI==============================================
+def admin_banner():
+    print(f"""===========================[ADMINISTRATOR]============================
+WARNING: This section is for the developer only. 
+         Actions done here is IRREVOCABLE.\n\n""")
+
+
 def admin_manage_accounts():
-    pass
+    while 1:
+        refresh_screen()
+        admin_banner()
+        while 2:
+            choice = input("A. VIEW LIST OF ACCOUNTS\nB. DELETE ACCOUNT\nC. BACK\n\n> ").lower()
+            if choice == 'a':
+                refresh_screen()
+                admin_banner()
+                c.execute("SELECT * FROM Accounts WHERE name != 'Administrator'")
+                list_account = c.fetchall()
+                print('ORDERED BY\n1.Name  2.Age  3.Password  4.Coins  5.User Type  6.Coin Limit'
+                      '\n========================================================================')
+                counter = 1
+                for acc in list_account:
+                    print(f'  {counter}. {acc[0]}  |  {acc[1]}  |  {acc[2]}  |  {acc[3]:,}  |  {acc[4]}  |  {acc[5]} ')
+                    counter += 1
+                choice1 = input('========================================================================\nReturn? ').lower()
+                if choice1 == 'y' or choice1 == 'yes':
+                    break
+                else:
+                    continue
+
 
 
 def admin_add_coins():
@@ -731,7 +758,7 @@ def initial_screen():
         os.system('cls')
         prompt = input("""
            #==========================================#
-           ||        Welcome to CASINO GAMES         ||
+           ||           Welcome to CASINO            ||
            ||  This game was made by Glenn Castillo  ||
            #==========================================#
                 
@@ -739,8 +766,10 @@ def initial_screen():
                     Do you have an account?
                        Yes - User Login
                        No - Registration
-                       C - Check Leaderboard
-                       Quit - Exit App
+                    ------------------------
+                    M - Multiplayer Battle
+                    C - Check Leaderboard
+                    Quit - Exit App
                         
                         
                             > """).lower()
@@ -752,6 +781,8 @@ def initial_screen():
                 initial_menu(user)
         elif prompt == 'no' or prompt == 'n':
             registration_menu()
+        elif prompt == 'm' or prompt == 'multiplayer':
+            pass
         elif prompt == 'c' or prompt == 'check':
             high_score_ui()
         elif prompt == 'quit' or prompt == 'exit':
