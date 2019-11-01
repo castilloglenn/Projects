@@ -45,13 +45,13 @@ def get_data(name, password):
     c.execute(f"SELECT * FROM Accounts WHERE name = '{name}'")
     data2 = c.fetchone()
     if data2 is None:
-        print(f"\n                 User {name} does not exist. (Username is case-sensitive)")
+        print(f"\n     User {name} does not exist. (Username is case-sensitive)")
         time.sleep(3)
     elif name == data2[0]:
         if password == data2[2]:
             return data2
         else:
-            print('\n                        Wrong password')
+            print('\n                      Incorrect password')
             time.sleep(1)
 
 
@@ -104,7 +104,7 @@ def password_wrong(name):
 
 
 def password_validator(name, password):
-    verification = getpass.getpass(prompt=f'\nEnter the {name} key: ').lower()
+    verification = getpass.getpass(prompt=f'Enter the {name} key: ').lower()
     is_matched = True if verification == password else False
     return is_matched
 
@@ -550,17 +550,19 @@ def admin_manage_accounts():
                         admin_banner()
                         last_chance = input('ARE YOU SURE?\n> ').lower()
                         if last_chance == 'y' or last_chance == 'yes':
-                            validator = getpass.getpass(prompt='\nEnter the verifier key: ').lower()
-                            if validator == master_key:
+                            validator = password_validator('deletion', master_key)
+                            if validator:
                                 print('Passwords matched!')
                                 time.sleep(1)
                                 print('Deleting User...')
                                 c.execute(f"DELETE FROM Accounts WHERE name == '{input_name}'")
                                 conn.commit()
+                                c.execute(f"DELETE FROM Leaderboard WHERE name == '{input_name}'")
+                                conn.commit()
                                 time.sleep(1)
                                 break
                             else:
-                                prompt = input('\nPassword not matched.\nWould you like to try again?\n').lower()
+                                prompt = input('\nPassword not matched.\nTry again?\n').lower()
                                 if prompt == 'yes' or prompt == 'y':
                                     continue
                                 elif prompt == 'no' or prompt == 'n':
@@ -579,22 +581,156 @@ def admin_manage_accounts():
 
 
 def admin_add_coins():
-    pass
+    while 1:
+        os.system('cls')
+        admin_banner()
+        master_key = 'add'
+        input_name = input('ENTER THE NAME: ')
+        c.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
+        add_coin_data = c.fetchone()
+        if add_coin_data is None:
+            print(f'\nUSER {input_name} DOES NOT EXIST.')
+            prompt = input('Would you like to try again?\n').lower()
+            if prompt == 'yes' or prompt == 'y':
+                continue
+            elif prompt == 'no' or prompt == 'n':
+                break
+            else:
+                print('YES or NO only.')
+        else:
+            while 2:
+                os.system('cls')
+                admin_banner()
+                validator = password_validator('verifier', master_key)
+                if validator:
+                    coin_amount = int(input("ENTER THE NUMBER OF COINS: "))
+                    print(f"Adding {coin_amount} Coins to {input_name}...")
+                    time.sleep(2)
+                    c.execute(f"UPDATE Accounts SET coins = {coin_amount} WHERE name = '{input_name}'")
+                    conn.commit()
+                    print('Added!')
+                    time.sleep(1)
+                    break
+                else:
+                    prompt = input('\nPassword not matched.\nTry again?\n').lower()
+                    if prompt == 'yes' or prompt == 'y':
+                        continue
+                    elif prompt == 'no' or prompt == 'n':
+                        break
+                    else:
+                        print('YES or NO only.')
 
 
 def admin_add_coin_limit():
-    pass
+    while 1:
+        os.system('cls')
+        admin_banner()
+        master_key = 'change'
+        input_name = input('ENTER THE NAME: ')
+        c.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
+        add_coin_limit_data = c.fetchone()
+        if add_coin_limit_data is None:
+            print(f'\nUSER {input_name} DOES NOT EXIST.')
+            prompt = input('Would you like to try again?\n').lower()
+            if prompt == 'yes' or prompt == 'y':
+                continue
+            elif prompt == 'no' or prompt == 'n':
+                break
+            else:
+                print('YES or NO only.')
+        else:
+            while 2:
+                os.system('cls')
+                admin_banner()
+                validator = password_validator('verifier', master_key)
+                if validator:
+                    coin_limit_amount = int(input("ENTER NEW COIN LIMIT: "))
+                    print(f"Changing {input_name}'s coin limit to {coin_limit_amount}...")
+                    time.sleep(2)
+                    c.execute(f"UPDATE Accounts SET coin_limit = {coin_limit_amount} WHERE name = '{input_name}'")
+                    conn.commit()
+                    print('Changed!')
+                    time.sleep(1)
+                    break
+                else:
+                    prompt = input('\nPassword not matched.\nTry again?\n').lower()
+                    if prompt == 'yes' or prompt == 'y':
+                        continue
+                    elif prompt == 'no' or prompt == 'n':
+                        break
+                    else:
+                        print('YES or NO only.')
 
 
 def admin_change_subscription():
+    while 1:
+        os.system('cls')
+        admin_banner()
+        master_key = 'change'
+        input_name = input('ENTER THE NAME: ')
+        c.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
+        change_sub_data = c.fetchone()
+        if change_sub_data is None:
+            print(f'\nUSER {input_name} DOES NOT EXIST.')
+            prompt = input('Would you like to try again?\n').lower()
+            if prompt == 'yes' or prompt == 'y':
+                continue
+            elif prompt == 'no' or prompt == 'n':
+                break
+            else:
+                print('YES or NO only.')
+        else:
+            while 2:
+                os.system('cls')
+                admin_banner()
+                validator = password_validator('verifier', master_key)
+                if validator:
+                    os.system('cls')
+                    admin_banner()
+                    c.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
+                    new_data = c.fetchone()
+                    print(f"User {input_name} is a {new_data[4]}")
+                    subs = {'a':'Premium User', 'b':'Normal User'}
+                    new_subscription = input("ENTER NEW SUBSCRIPTION:\nA. Premium User\nB. Normal User\n> ").lower()
+                    if new_subscription == 'a':
+                        if new_data[4] == subs['a']:
+                            print('Subscription is same as current.')
+                            time.sleep(2)
+                        else:
+                            print(f"Changing {input_name}'s subscription to {subs[new_subscription]}...")
+                            time.sleep(2)
+                            c.execute(f"UPDATE Accounts SET user_type = '{subs[new_subscription]}' WHERE name = '{input_name}'")
+                            conn.commit()
+                            print('Changed!')
+                            time.sleep(1)
+                            break
+                    elif new_subscription == 'b':
+                        if new_data[4] == subs['b']:
+                            print('Subscription is same as current.')
+                            time.sleep(2)
+                        else:
+                            print(f"Changing {input_name}'s subscription to {subs[new_subscription]}...")
+                            time.sleep(2)
+                            c.execute(f"UPDATE Accounts SET user_type = '{subs[new_subscription]}' WHERE name = '{input_name}'")
+                            conn.commit()
+                            print('Changed!')
+                            time.sleep(1)
+                            break
+                else:
+                    prompt = input('\nPassword not matched.\nTry again?\n').lower()
+                    if prompt == 'yes' or prompt == 'y':
+                        continue
+                    elif prompt == 'no' or prompt == 'n':
+                        break
+                    else:
+                        print('YES or NO only.')
+
+
+def admin_view_logs():
     pass
 
 
-def admin_ban_players():
-    pass
-
-
-def admin_reset_database():
+def admin_backup_reset_database():
     pass
 
 
@@ -607,7 +743,7 @@ def admin_ui(user):
         else:
             display_status(user)
             print('==============================[MAIN=MENU]=============================\n   Choose a game:\n    A. Guess The Number      D. (unavailable)\n    B. Dice (Hi-Lo)          E. Add Coins (requires master key)\n    C. (unavailable)         F. Log out')
-            game_choice = input('\n==============================[ADMIN=UI]==============================\n\n    1. Manage Accounts       4. Change Subscription\n    2. Add Coins             5. Ban Players\n    3. Add Coin-Limit        6. Reset Database\n\n> ')
+            game_choice = input('\n==============================[ADMIN=UI]==============================\n\n    1. Manage Accounts       4. Change Subscription\n    2. Add Coins             5. View Logs\n    3. Add Coin-Limit        6. Reset Database\n\n> ')
             if game_choice == 'a':
                 guess_the_number(user)
             elif game_choice == 'b':
@@ -640,9 +776,9 @@ def admin_ui(user):
             elif game_choice == '4':
                 admin_change_subscription()
             elif game_choice == '5':
-                admin_ban_players()
+                admin_view_logs()
             elif game_choice == '6':
-                admin_reset_database()
+                admin_backup_reset_database()
             else:
                 print('Enter the letter of desired option only.')
                 time.sleep(1.5)
@@ -791,8 +927,8 @@ def login():
         name = input(f"""
             
             
-                        Username: """)
-        password = getpass.getpass('                        Password: ')
+                Username: """)
+        password = getpass.getpass('                Password: ')
         user_data = get_data(name, password)
         if user_data is None:
             continue
