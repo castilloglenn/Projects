@@ -16,8 +16,7 @@ class UserInfo:
 # ======================================DATABASE======================================
 conn = sqlite3.connect('lib.db')
 c = conn.cursor()
-c.execute(
-    'CREATE TABLE IF NOT EXISTS Accounts (name TEXT, age INTEGER, password TEXT, coins INTEGER, user_type TEXT, coin_limit INTEGER)')
+c.execute('CREATE TABLE IF NOT EXISTS Accounts (name TEXT, age INTEGER, password TEXT, coins INTEGER, user_type TEXT, coin_limit INTEGER)')
 c.execute('CREATE TABLE IF NOT EXISTS Leaderboard (name TEXT, biggest_bid INTEGER, highest_coin INTEGER)')
 
 c.execute("SELECT * FROM Accounts")
@@ -26,9 +25,8 @@ c.execute("SELECT * FROM Accounts WHERE name = 'Administrator'")
 verify_data = c.fetchone()
 if verify_data not in data:
     c.execute('INSERT INTO Accounts VALUES (?, ?, ?, ?, ?, ?)',
-              ('Administrator', 420, 'Admin@123', 10000000, 'Premium User', 1000))
+              ('Administrator', 69420, 'Admin@123', 10000000, 'Game Master', 1000))
     conn.commit()
-    c.execute('INSERT INTO Leaderboard VALUES (?, ?, ?)', ('Administrator', 0, 0))
 else:
     pass
 
@@ -158,7 +156,7 @@ def bet_receiver(user):
         print(f"[Total Reward]: {user.reward:,} Coins {additional[prompt] if prompt in additional else ''}")
         time.sleep(1.5)
         high_bid_update(user)
-        add_logs(f'{user.name}, Bet: {user.initial_bet} {multiplier_value}X = {user.reward}')
+        add_logs(f'{user.name} Bet: {user.initial_bet:,} {multiplier_value}X = {user.reward:,}')
     return user, quit1
 
 
@@ -200,7 +198,7 @@ def add_coins(user):
                                         print(f'Your new coin balance is {user.coins}.\n')
                                         user.coin_limit -= 1
                                         save_data(user)
-                                        add_logs(f'{user.name}, added {coins_list[addition]} with {user.user_type}.')
+                                        add_logs(f'{user.name} added {coins_list[addition]} with {user.user_type}.')
                                         time.sleep(2)
                                         break
                                     elif user.user_type == 'Premium User':
@@ -208,7 +206,7 @@ def add_coins(user):
                                         print(f'Your new coin balance is {user.coins} (+50% Premium Bonus).\n')
                                         user.coin_limit -= 1
                                         save_data(user)
-                                        add_logs(f'{user.name}, added {coins_list[addition]} with {user.user_type}.')
+                                        add_logs(f'{user.name} added {coins_list[addition]} with {user.user_type}.')
                                         time.sleep(2)
                                         break
                                 else:
@@ -251,7 +249,7 @@ def dice_hi_lo_win(user, bonus, choice):
     print('Congratulations!')
     print(f'{new_balance(user.coins)}')
     high_coin_update(user)
-    add_logs(f'{user.name}, Has won Dice Hi-Lo with {user.reward * bonus[choice]} Coins, {user.coins} Balance')
+    add_logs(f'{user.name} Won Dice Hi-Lo with {user.reward * bonus[choice]:,} Coins, {user.coins:,} Balance')
     return user
 
 
@@ -260,7 +258,7 @@ def dice_hi_lo_lost(user):
     user.coins -= user.initial_bet
     print('You LOST!')
     print(f'{new_balance(user.coins)}')
-    add_logs(f'{user.name}, Has lost Dice Hi-Lo with {user.initial_bet} Coins, {user.coins} Balance')
+    add_logs(f'{user.name} Lost Dice Hi-Lo with {user.initial_bet:,} Coins, {user.coins:,} Balance')
     return user
 
 
@@ -380,7 +378,7 @@ def guess_the_number(user):
                         user.coins -= user.initial_bet
                         print(f'{new_balance(user.coins)}')
                         save_data(user)
-                        add_logs(f'{user.name}, Lost Guess The Number with {user.initial_bet} Coins, {user.coins} Balance')
+                        add_logs(f'{user.name} Lost Guess The Number with {user.initial_bet:,} Coins, {user.coins:,} Balance')
                         break
                     else:
                         os.system('cls')
@@ -409,7 +407,7 @@ def guess_the_number(user):
                                 print(f'{new_balance(user.coins)}')
                                 high_coin_update(user)
                                 save_data(user)
-                                add_logs(f'{user.name}, Won Guess The Number with {user.reward}, {user.coins} Balance')
+                                add_logs(f'{user.name}, Won Guess The Number with {user.reward:,}, {user.coins:,} Balance')
                                 break
                         except ValueError:
                             print('Please enter a valid integer.')
@@ -458,6 +456,7 @@ def initial_menu(user):
                     print('Returning to log-in screen...')
                     time.sleep(1)
                     save_data(user)
+                    add_logs(f"{user.name} has logged out.")
                     break
                 else:
                     os.system('cls')
@@ -550,7 +549,7 @@ def admin_manage_accounts():
                 choice1 = input(
                     '========================================================================\nReturn? ').lower()
                 if choice1 == 'y' or choice1 == 'yes':
-                    add_logs('Administrator checked the database files.')
+                    add_logs('Administrator checked the database files')
                     break
                 else:
                     continue
@@ -679,7 +678,7 @@ def admin_add_coin_limit():
                     conn.commit()
                     print('Changed!')
                     time.sleep(1)
-                    add_logs(f"Administrator added {coin_limit_amount} to {input_name}'s coin-limit.")
+                    add_logs(f"Administrator changed {input_name}'s coin-limit to {coin_limit_amount}")
                     break
                 else:
                     prompt = input('\nPassword not matched.\nTry again?\n').lower()
@@ -776,8 +775,117 @@ def admin_view_logs():
             refresh_screen()
 
 
-def admin_backup_reset_database():
-    pass
+def admin_manage_database():
+    while 1:
+        refresh_screen()
+        admin_banner()
+        choice = input("A. BACKUP DATABASE\nB. UPDATE DATABASE\nC. DELETE DATABASE\nD. BACK\n\n> ").lower()
+        if choice == 'a':
+            refresh_screen()
+            admin_banner()
+            prompt = input('ARE YOU SURE YOU WANT TO BACKUP THE DATABASE FILE?\n> ').lower()
+            if prompt == 'yes' or prompt == 'y':
+                backup_file = sqlite3.connect('lib_backup.db')
+                conn.backup(backup_file)
+                print('\nDATABASE HAS BEEN BACKUP TO FILE NAME "lib_backup.db" OF THE SAME DIRECTORY.')
+                time.sleep(2)
+                print('Returning...')
+                time.sleep(1)
+                add_logs('Administrator backup the database')
+                backup_file.close()
+                break
+            else:
+                print('NO ACTIONS HAS BEEN TAKEN')
+                time.sleep(1)
+        elif choice == 'b':
+            refresh_screen()
+            admin_banner()
+            prompt = input('ARE YOU SURE YOU WANT TO UPDATE THE DATABASE FILE FROM BACKUP?\n'
+                           '(FILE lib_backup.db MUST BE ON THE SAME DIRECTORY)\n'
+                           '> ').lower()
+            if prompt == 'yes' or prompt == 'y':
+                backup_file = sqlite3.connect('lib_backup.db')
+                backup_c = backup_file.cursor()
+
+                backup_c.execute('SELECT * FROM Accounts')
+                backup_data = backup_c.fetchall()
+
+                c.execute('SELECT * FROM Accounts')
+                my_data = c.fetchall()
+
+                for backup_row in backup_data:
+                    for my_data_row in my_data:
+                        if backup_row[0] == my_data_row[0] and backup_row[2] == my_data_row[2]:
+                            c.execute(f"UPDATE Accounts SET coins = {backup_row[3]}, user_type = '{backup_row[4]}', coin_limit = {backup_row[5]} WHERE name = '{backup_row[0]}' AND password = '{backup_row[2]}'")
+                            conn.commit()
+                            add_logs(f"BACKUP LOGS: {backup_row[0]}'s account has been updated")
+                    if backup_row not in my_data:
+                        c.execute(f"INSERT INTO Accounts VALUES (?, ?, ?, ?, ?, ?)", backup_row)
+                        conn.commit()
+                        add_logs(f'BACKUP LOGS: User {backup_row[0]} has been added')
+
+                backup_c.execute('SELECT * FROM Leaderboard')
+                backup_data_l = backup_c.fetchall()
+
+                c.execute('SELECT * FROM Leaderboard')
+                my_data_l = c.fetchall()
+
+                for backup_row in backup_data_l:
+                    for my_data_row in my_data_l:
+                        if backup_row[0] == my_data_row[0]:
+                            c.execute(
+                                f"UPDATE Leaderboard SET biggest_bid = {backup_row[1]}, highest_coin = {backup_row[2]} WHERE name = '{backup_row[0]}'")
+                            conn.commit()
+                            add_logs(f"BACKUP LOGS: {backup_row[0]}'s leaderboard account has been updated")
+                    if backup_row not in my_data_l:
+                        c.execute(f"INSERT INTO Leaderboard VALUES (?, ?, ?)", backup_row)
+                        conn.commit()
+                        add_logs(f'BACKUP LOGS: User {backup_row[0]} in leaderboard has been added')
+
+                time.sleep(2)
+                print('\nTHE DATABASE HAS BEEN UPDATED.')
+                time.sleep(1)
+                print('Returning...')
+                time.sleep(1)
+                add_logs('Administrator has updated the database')
+                break
+            else:
+                print('NO ACTIONS HAS BEEN TAKEN')
+                time.sleep(1)
+        elif choice == 'c':
+            refresh_screen()
+            admin_banner()
+            prompt = input('ARE YOU SURE YOU WANT TO DELETE THE DATABASE?\n(REQUIRES RESTART OF THE GAME)\n> ').lower()
+            if prompt == 'yes' or prompt == 'y':
+                add_logs('Administrator tries to delete the database...')
+                another_prompt = input('\nFINAL DECISION?\n> ').lower()
+                if another_prompt == 'yes' or 'y':
+                    a = 'delete'
+                    b = 'the'
+                    d = 'database'
+                    first_pass = getpass.getpass(prompt='Enter the first deletion key: ').lower()
+                    if first_pass == a:
+                        second_pass = getpass.getpass(prompt='Enter the second deletion key: ').lower()
+                        if second_pass == b:
+                            third_pass = getpass.getpass(prompt='Enter the third deletion key: ').lower()
+                            if third_pass == d:
+                                c.execute('DELETE FROM Accounts')
+                                conn.commit()
+                                c.execute('DELETE FROM Leaderboard')
+                                conn.commit()
+                                print('The database has been wiped out of existence.')
+                                add_logs('Administrator has DELETED the DATABASE')
+                                time.sleep(2)
+                                break
+            else:
+                print('NO ACTIONS HAS BEEN TAKEN')
+                time.sleep(1)
+        elif choice == 'd':
+            break
+        else:
+            print('CHOOSE THE LETTER WISELY.')
+            time.sleep(1.5)
+
 
 
 def admin_ui(user):
@@ -788,30 +896,23 @@ def admin_ui(user):
             break
         else:
             display_status(user)
-            print(
-                '==============================[MAIN=MENU]=============================\n   Choose a game:\n    A. Guess The Number      D. (unavailable)\n    B. Dice (Hi-Lo)          E. Add Coins (requires master key)\n    C. (unavailable)         F. Log out')
-            game_choice = input(
-                '\n==============================[ADMIN=UI]==============================\n\n    1. Manage Accounts       4. Change Subscription\n    2. Add Coins             5. View Logs\n    3. Add Coin-Limit        6. Reset Database\n\n> ')
-            if game_choice == 'a':
-                guess_the_number(user)
-            elif game_choice == 'b':
-                dice_hi_lo(user)
-            elif game_choice == 'c':
-                pass
-            elif game_choice == 'd':
-                pass
-            elif game_choice == 'e':
-                if user.coin_limit >= 1:
-                    add_coins(user)
-                elif user.coin_limit < 1:
-                    print('You have already reached your add-coins limit.')
-                    time.sleep(1)
-            elif game_choice == 'f':
-                last_prompt = input('Are you sure? (Your data will be saved.)\n(Yes/No): ').lower()
+            game_choice = input("""
+==============================[ADMIN=UI]==============================
+
+       1. Manage Accounts       4. Change Subscription
+       2. Add Coins             5. View Logs
+       3. Add Coin-Limit        6. Manage Database
+   
+======================================================================
+       0. Log out
+       > """)
+            if game_choice == '0':
+                last_prompt = input('\nAre you sure? (Your data will be saved.)\n(Yes/No): ').lower()
                 if last_prompt == 'yes' or last_prompt == 'y':
                     print('Returning to log-in screen...')
                     time.sleep(1)
                     save_data(user)
+                    add_logs('Administrator has logged out.')
                     break
                 else:
                     os.system('cls')
@@ -826,7 +927,7 @@ def admin_ui(user):
             elif game_choice == '5':
                 admin_view_logs()
             elif game_choice == '6':
-                admin_backup_reset_database()
+                admin_manage_database()
             else:
                 print('Enter the letter of desired option only.')
                 time.sleep(1.5)
@@ -837,6 +938,7 @@ def admin_ui(user):
 def display_status(user):
     os.system('cls')
     print(f"""===============================[STATUS]===============================
+        
         Username: {user.name}
         Age: {user.age}
         Subscription: {user.user_type}
@@ -1013,8 +1115,10 @@ def initial_screen():
         if prompt == 'yes' or prompt == 'y':
             user = login()
             if user.name == 'Administrator':
+                add_logs('Administrator logged in.')
                 admin_ui(user)
             else:
+                add_logs(f"{user.name} has logged in.")
                 initial_menu(user)
         elif prompt == 'no' or prompt == 'n':
             registration_menu()
@@ -1027,9 +1131,11 @@ def initial_screen():
             time.sleep(2)
             c.close()
             conn.close()
+            add_logs('User exit the game.')
             quit()
         else:
             continue
 
 
+add_logs('Game has launched.')
 initial_screen()
