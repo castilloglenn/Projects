@@ -47,8 +47,8 @@ def get_data(name, password):
     c.execute(f"SELECT * FROM Accounts WHERE name = '{name}'")
     data2 = c.fetchone()
     if data2 is None:
-        print(f"\n     User {name} does not exist. (Username is case-sensitive)")
-        time.sleep(3)
+        print(f"\n           User {name} does not exist. (Username is case-sensitive)")
+        time.sleep(1.5)
     elif name == data2[0]:
         if password == data2[2]:
             return data2
@@ -88,8 +88,8 @@ def high_coin_update(user):
 
 
 #===================================LOGS=AND=ENCRYPTION===============================
-alpha = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()-=_+|[]{};:,./<>?abcdefghijklmnopqrstuvwxyz'
-bravo = 'zyxwvutsrqponmlkjihgfedcba?></.,:;}{][|+_=-)(*&^%$#@!0987654321ZYXWVUTSRQPONMLKJIHGFEDCBA '
+alpha = ' CBADEFGHIJKP:,.j<>?abcONMLQRSTUVWXYZdefghi/kponmlqrs!1234567890@#$%^&*()-=_+|[]{};tuvwxyz'
+bravo = 'zyxwvut;}{][|+_=-)(*&^%$#@0987654321!srqlmnopk/ihgfedZYXWVUTSRQLMNOcba?><j.,:PKJIHGFEDABC '
 encrypt = str.maketrans(alpha, bravo)
 decrypt = str.maketrans(bravo, alpha)
 
@@ -108,16 +108,16 @@ def refresh_screen():
 
 
 def new_balance(coins):
-    return f'New Balance: {int(round(coins)):,} Coins'
+    return f'           New Balance: {int(round(coins)):,} Coins'
 
 
 def password_wrong(name):
-    user_ans = input(f'You have entered the wrong {name} key.\nWould you like to try again? (Yes/No)\n> ').lower()
+    user_ans = input(f'           You have entered the wrong {name} key.\n           Would you like to try again? (Yes/No)\n> ').lower()
     return True if user_ans == 'yes' or user_ans == 'y' else False
 
 
 def password_validator(name, password):
-    verification = getpass.getpass(prompt=f'Enter the {name} key: ').lower()
+    verification = getpass.getpass(prompt=f'\n       Enter the {name} key: ').lower()
     is_matched = True if verification == password else False
     return is_matched
 
@@ -128,7 +128,9 @@ def bet_receiver(user):
     multiplier = {1: 1.1, 2: 1.2, 3: 1.3, 4: 1.4, 5: 1.5}
     additional = {'e': '(+10%)', 'f': '(+25%)'}
     while 1:
-        prompt = input('\nTo begin, choose your bet:\nA. 10 Coins       E. Half of my coins! (+10% Bonus)\nB. 25 Coins       F. All IN! (+25% Bonus)\nC. 50 Coins       G. Quit\nD. 100 Coins\n\n> ').lower()
+        prompt = input('\n           To begin, choose your bet:\n           A. 10 Coins       E. Half of my coins! (+10% Bonus)\n'
+                       '           B. 25 Coins       F. All IN! (+25% Bonus)\n           C. 50 Coins       G. Quit\n'
+                       '           D. 100 Coins\n\n           > ').lower()
         if prompt == 'g':
             quit1 = True
             refresh_screen()
@@ -138,9 +140,9 @@ def bet_receiver(user):
                 user.initial_bet = bet_list[prompt]
                 break
             else:
-                print('You cannot bet higher than your current coins.')
+                print('           You cannot bet higher than your current coins.')
         else:
-            print('Please enter the letter of desired amount only.')
+            print('           Please enter the letter of desired amount only.')
     if not quit1:
         multiplier_value = multiplier[random.randint(1, 5)]
         if prompt == 'e':
@@ -149,11 +151,11 @@ def bet_receiver(user):
             user.reward = int(round(user.initial_bet * 1.25 * multiplier_value))
         else:
             user.reward = int(round(user.initial_bet * multiplier_value))
-        print(f'\n[Initial bet]: {int(user.initial_bet):,} Coins')
+        print(f'\n           [Initial bet]: {int(user.initial_bet):,} Coins')
         time.sleep(0.5)
-        print(f'[Bonus Multiplier]: {multiplier_value}X')
+        print(f'           [Bonus Multiplier]: {multiplier_value}X')
         time.sleep(0.5)
-        print(f"[Total Reward]: {user.reward:,} Coins {additional[prompt] if prompt in additional else ''}")
+        print(f"           [Total Reward]: {user.reward:,} Coins {additional[prompt] if prompt in additional else ''}")
         time.sleep(1.5)
         high_bid_update(user)
         add_logs(f'{user.name} Bet: {user.initial_bet:,} {multiplier_value}X = {user.reward:,}')
@@ -163,61 +165,58 @@ def bet_receiver(user):
 # =====================================ADD=COINS====================================
 def add_coins(user):
     coins_list = {'a': 50, 'b': 100, 'c': 250, 'd': 500, 'z': 1000}
-    verify_key = {'a': 'alpha', 'b': 'beta', 'c': 'charlie', 'd': 'delta', 'z': 'bonus'}
+    verify_key = {'a': 'alpha', 'b': 'bravo', 'c': 'charlie', 'd': 'delta', 'z': 'bonus'}
     master_key = 'castillo'
     while 1:
         display_status(user)
         print('==============================[ADD=COINS]=============================')
-        prompt = input('\nWould you like to add coins? (Yes/No)\n> ').lower()
-        if prompt == 'yes' or prompt == 'y':
+        prompt = input('\n           A. ADD COINS\n           B. ENTER COUPON CODE\n           C. BACK\n> ').lower()
+        if prompt == 'a':
             while 2:
                 if user.coin_limit < 1:
-                    print('You have already reached your add-coins limit.')
+                    print('           You have already reached your add-coins limit.')
                     break
                 elif user.coin_limit >= 1:
                     display_status(user)
                     print('==============================[ADD=COINS]=============================')
                     verification = password_validator('master', master_key)
                     if verification:
-                        time.sleep(1)
-                        print(f'\nSuccessful!')
-                        time.sleep(0.3)
+                        print(f'\n           Successful!')
+                        time.sleep(0.5)
                         refresh_screen()
                         while 3:
                             display_status(user)
                             print('==============================[ADD=COINS]=============================')
                             addition = input('\nNow enter how many coins would you like to add:\nA. 50 Coins\nB. 100 Coins\nC. 250 Coins\nD. 500 Coins\n> ').lower()
                             if addition in coins_list:
-                                verify = getpass.getpass(prompt='Enter verification key: ').lower()
+                                verify = getpass.getpass(prompt='           Enter verification key: ').lower()
                                 if verify == verify_key[addition]:
-                                    time.sleep(1)
-                                    print('Successful!')
-                                    time.sleep(0.3)
+                                    print('           Successful!')
+                                    time.sleep(0.5)
                                     if user.user_type == 'Normal User':
                                         user.coins += coins_list[addition]
-                                        print(f'Your new coin balance is {user.coins}.\n')
+                                        print(f'           Your new coin balance is {user.coins}.\n')
                                         user.coin_limit -= 1
                                         save_data(user)
-                                        add_logs(f'{user.name} added {coins_list[addition]} with {user.user_type}.')
+                                        add_logs(f'           {user.name} added {coins_list[addition]} with {user.user_type}.')
                                         time.sleep(2)
                                         break
                                     elif user.user_type == 'Premium User':
                                         user.coins += int(coins_list[addition] * 1.5)
-                                        print(f'Your new coin balance is {user.coins} (+50% Premium Bonus).\n')
+                                        print(f'           Your new coin balance is {user.coins} (+50% Premium Bonus).\n')
                                         user.coin_limit -= 1
                                         save_data(user)
-                                        add_logs(f'{user.name} added {coins_list[addition]} with {user.user_type}.')
+                                        add_logs(f'           {user.name} added {coins_list[addition]} with {user.user_type}.')
                                         time.sleep(2)
                                         break
                                 else:
-                                    time.sleep(1)
                                     prompt = password_wrong('master')
                                     if prompt:
                                         continue
                                     else:
                                         break
                             else:
-                                print('Please enter the letter of desired value only.')
+                                print('           Please enter the letter of desired value only.')
                         break
                     else:
                         prompt = password_wrong('master')
@@ -225,11 +224,30 @@ def add_coins(user):
                             continue
                         else:
                             break
-        elif prompt == 'no' or prompt == 'n':
+        elif prompt == 'b':
+            display_status(user)
+            print('=============================[COUPON=CODE]============================')
+            coupons = {'bsit1d':10000, 'cvsuimus':20000, 'glenncastillo':30000, 'meandtheboys':50000}
+            coupon_code = input('\n           Enter the coupon code:\n> ').lower()
+            if coupon_code in coupons:
+                user.coins += coupons[coupon_code]
+                time.sleep(1)
+                print('           Congratulations!')
+                print(f"\n           {coupons[coupon_code]:,} has been added to your account.")
+                add_logs(f'           {user.name} redeemed coupon using {coupon_code}, {user.coins}')
+                time.sleep(2)
+                break
+            else:
+                prompt = password_wrong('coupon code')
+                if prompt:
+                    continue
+                else:
+                    break
+        elif prompt == 'c':
             break
         else:
-            print("Enter 'Yes' or 'No' only.")
-    print(f'Coin Balance: {user.coins}')
+            print("           Enter 'Yes' or 'No' only.")
+    print(f'           Coin Balance: {user.coins}')
     refresh_screen()
     return user
 
@@ -237,16 +255,16 @@ def add_coins(user):
 # ====================================GAME=LIST========================================
 # ====================================DICE=HI=LO=======================================
 def dice_hi_lo_display(user, has_bonus, bonus):
-    print(f'[DICE HI-LO]\nWelcome {user.name}. Your account balance is {int(user.coins):,} Coins\n')
+    print(f'\n           [DICE HI-LO]\n           Welcome {user.name}, Account Balance: {int(user.coins):,} Coins\n')
     if has_bonus:
-        print(f'Total Reward: {int(user.reward):,} Coins ({bonus} Bonus)')
+        print(f'           Total Reward: {int(user.reward):,} Coins ({bonus} Bonus)')
     elif not has_bonus:
-        print(f'Total Reward: {user.reward:,} Coins')
+        print(f'           Total Reward: {user.reward:,} Coins')
 
 
 def dice_hi_lo_win(user, bonus, choice):
     user.coins += round(user.reward * bonus[choice])
-    print('Congratulations!')
+    print('           Congratulations!')
     print(f'{new_balance(user.coins)}')
     high_coin_update(user)
     add_logs(f'{user.name} Won Dice Hi-Lo with {user.reward * bonus[choice]:,} Coins, {user.coins:,} Balance')
@@ -256,7 +274,7 @@ def dice_hi_lo_win(user, bonus, choice):
 def dice_hi_lo_lost(user):
     high_bid_update(user)
     user.coins -= user.initial_bet
-    print('You LOST!')
+    print('           You LOST!')
     print(f'{new_balance(user.coins)}')
     add_logs(f'{user.name} Lost Dice Hi-Lo with {user.initial_bet:,} Coins, {user.coins:,} Balance')
     return user
@@ -268,10 +286,10 @@ def dice_hi_lo(user):
             break
         else:
             refresh_screen()
-            computer_dices = {1: random.randint(1, 6), 2: random.randint(1, 6), 3: random.randint(1, 6),
-                              4: random.randint(1, 6)}
-            player_dices = {1: random.randint(1, 6), 2: random.randint(1, 6), 3: random.randint(1, 6),
-                            4: random.randint(1, 6)}
+            computer_dices = {1: random.randint(1, 6), 2: random.randint(1, 6),
+                              3: random.randint(1, 6), 4: random.randint(1, 6)}
+            player_dices = {1: random.randint(1, 6), 2: random.randint(1, 6),
+                            3: random.randint(1, 6), 4: random.randint(1, 6)}
             dice_bonus = {'a': 1.0, 'b': 1.1, 'c': 1.25, 'd': 1.5}
             dice_dict = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
             bonus_visual = {'b': '+10%', 'c': '+25%', 'd': '+50%'}
@@ -281,7 +299,13 @@ def dice_hi_lo(user):
             if not prompt:
                 os.system('cls')
                 dice_hi_lo_display(user, False, 0)
-                user_choice = input('\nHow many dices would you like to play?\nA. 1 Die (No Bonus)\nB. 2 Dice (10% Bonus)\nC. 3 Dice (25% Bonus)\nD. 4 Dice (50% Bonus)\nE. Quit\n\n> ').lower()
+                user_choice = input('\n           How many dices would you like to play?\n'
+                                    '           A. 1 Die (No Bonus)\n'
+                                    '           B. 2 Dice (10% Bonus)\n'
+                                    '           C. 3 Dice (25% Bonus)\n'
+                                    '           D. 4 Dice (50% Bonus)\n'
+                                    '           E. Quit\n\n'
+                                    '           > ').lower()
                 if user_choice == 'e':
                     os.system('cls')
                     break
@@ -292,65 +316,67 @@ def dice_hi_lo(user):
                         os.system('cls')
                         dice_hi_lo_display(user, True if user_choice in bonus_visual else False,
                                            bonus_visual[user_choice] if user_choice in bonus_visual else 0)
-                        hi_lo = input('\nDo you think you will have the higher value or lower value?\n\n(High/Low): ').lower()
+                        hi_lo = input('\n           Do you think you will have the higher value or lower value?\n\n'
+                                      '           (High/Low): ').lower()
                         if hi_lo in validator:
                             os.system('cls')
                             dice_hi_lo_display(user, True if user_choice in bonus_visual else False,
                                                bonus_visual[user_choice] if user_choice in bonus_visual else 0)
-                            print(f'\n         Computer         {user.name}')
+                            print(f'\n                    Computer         {user.name}')
                             for value in range(1, dice_dict[user_choice] + 1):
                                 time.sleep(1.5)
                                 print(
-                                    f'        Dice {value}: {computer_dices[value]}!      Dice {value}: {player_dices[value]}!')
+                                    f'                   Dice {value}: {computer_dices[value]}!      Dice {value}: {player_dices[value]}!')
                                 computer_total += computer_dices[value]
                                 player_total += player_dices[value]
                             time.sleep(1.5)
-                            print(f'\n        Computer: {computer_total}    {user.name}: {player_total}')
+                            print(f'\n                   Computer: {computer_total}    {user.name}: {player_total}')
                             time.sleep(1)
-                            print(f'\nYour bet: {hi_lo.upper()}')
+                            print(f'\n           Your bet: {hi_lo.upper()}')
                             if hi_lo == 'high' or hi_lo == 'hi':
                                 if player_total > computer_total:
                                     dice_hi_lo_win(user, dice_bonus, user_choice)
                                 elif player_total < computer_total:
                                     dice_hi_lo_lost(user)
                                 elif player_total == computer_total:
-                                    print("It's a tie!")
+                                    print("           It's a tie!")
                             elif hi_lo == 'low' or hi_lo == 'lo':
                                 if player_total < computer_total:
                                     dice_hi_lo_win(user, dice_bonus, user_choice)
                                 elif player_total > computer_total:
                                     dice_hi_lo_lost(user)
                                 elif player_total == computer_total:
-                                    print("It's a tie!")
+                                    print("           It's a tie!")
                             save_data(user)
                             break
                         else:
-                            print("Please enter 'High' or 'Low' only.")
+                            print("           Please enter 'High' or 'Low' only.")
                 else:
-                    print('Please enter the letter of your choice.')
+                    print('           Please enter the letter of your choice.')
             elif prompt:
                 break
-        prompt = input('Would you like to try again? (Yes/No): ').lower()
+        prompt = input('           Would you like to try again? (Yes/No): ').lower()
         if prompt == 'yes' or prompt == 'y':
             continue
         elif prompt == 'no' or prompt == 'n':
             os.system('cls')
             break
         else:
-            print("Enter 'Yes' or 'No' only.")
+            print("           Enter 'Yes' or 'No' only.")
+            time.sleep(0.5)
     return user
 
 
 # ===================================GUESS=THE=NUMBER===================================
 def guess_the_number_display(user, secret_number, is_shown, start, end):
-    print(f'[GUESS THE NUMBER!]\nWelcome {user.name}. Your account balance is {int(user.coins):,} Coins.\n')
+    print(f'\n           [GUESS THE NUMBER!]\n           Welcome {user.name}, Account Balance: {int(user.coins):,} Coins\n')
     if not is_shown:
-        print(f'Total Reward: {int(user.reward):,} Coins')
-        print(f'SECRET NUMBER: {secret_number}'.replace(str(secret_number), '##'))
-        print(f'The number ranges from {start} to {end}.')
+        print(f'           Total Reward: {int(user.reward):,} Coins')
+        print(f'           SECRET NUMBER: {secret_number}'.replace(str(secret_number), '##'))
+        print(f'           The number ranges from {start} to {end}.')
     elif is_shown:
-        print(f'Total Reward: {int(user.reward):,} Coins')
-        print(f'SECRET NUMBER: {secret_number}')
+        print(f'           Total Reward: {int(user.reward):,} Coins')
+        print(f'           SECRET NUMBER: {secret_number}')
 
 
 def guess_the_number(user):
@@ -374,35 +400,35 @@ def guess_the_number(user):
                     if guess_limit == 0:
                         os.system('cls')
                         guess_the_number_display(user, secret_number, True, start_value, end_value)
-                        print('\nYou ran out of guesses, YOU LOST!')
+                        print('\n           You ran out of guesses, YOU LOST!')
                         user.coins -= user.initial_bet
                         print(f'{new_balance(user.coins)}')
                         save_data(user)
-                        add_logs(f'{user.name} Lost Guess The Number with {user.initial_bet:,} Coins, {user.coins:,} Balance')
+                        add_logs(f'           {user.name} Lost Guess The Number with {user.initial_bet:,} Coins, {user.coins:,} Balance')
                         break
                     else:
                         os.system('cls')
                         guess_the_number_display(user, secret_number, False, start_value, end_value)
-                        print(f'Number of tries: {guess_limit} guess left.')
+                        print(f'           Number of tries: {guess_limit} guess left.')
                         try:
-                            user_guess = int(input('\nEnter your guess: '))
+                            user_guess = int(input('\n           Enter your guess: '))
                             if user_guess != secret_number and guess_limit != 0:
                                 if start_value <= user_guess <= end_value:
                                     if secret_number < user_guess:
-                                        print('Computer says: Lower!')
+                                        print('           Computer says: Lower!')
                                         guess_limit -= 1
                                         time.sleep(1)
                                     elif secret_number > user_guess:
-                                        print('Computer says: Higher!')
+                                        print('           Computer says: Higher!')
                                         guess_limit -= 1
                                         time.sleep(1)
                                 else:
-                                    print(f'Enter an integer from {start_value} to {end_value} only.')
+                                    print(f'           Enter an integer from {start_value} to {end_value} only.')
                                     time.sleep(2)
                             elif user_guess == secret_number:
                                 os.system('cls')
                                 guess_the_number_display(user, secret_number, True, start_value, end_value)
-                                print('\n\nCongratulations!')
+                                print('\n\n           Congratulations!')
                                 user.coins += user.reward
                                 print(f'{new_balance(user.coins)}')
                                 high_coin_update(user)
@@ -410,16 +436,16 @@ def guess_the_number(user):
                                 add_logs(f'{user.name}, Won Guess The Number with {user.reward:,}, {user.coins:,} Balance')
                                 break
                         except ValueError:
-                            print('Please enter a valid integer.')
+                            print('           Please enter a valid integer.')
                             time.sleep(1)
-                prompt = input('Would you like to try again? (Yes/No): ').lower()
+                prompt = input('           Would you like to try again? (Yes/No): ').lower()
                 if prompt == 'yes' or prompt == 'y':
                     continue
                 elif prompt == 'no' or prompt == 'n':
                     os.system('cls')
                     break
                 else:
-                    print("Enter 'Yes' or 'No' only.")
+                    print("           Enter 'Yes' or 'No' only.")
             elif prompt:
                 break
     return user
@@ -434,8 +460,12 @@ def initial_menu(user):
             break
         else:
             display_status(user)
-            game_choice = input(
-                '==============================[MAIN=MENU]=============================\n   Choose a game:\n    A. Guess The Number      D. (unavailable)\n    B. Dice (Hi-Lo)          E. Add Coins (requires master key)\n    C. (unavailable)         F. Log out\n\n> ').lower()
+            game_choice = input('    ==============================[MAIN=MENU]=============================\n\n'
+                                '        Choose a game:\n'
+                                '        A. Guess The Number      D. (unavailable)\n'
+                                '        B. Dice (Hi-Lo)          E. Add Coins/Enter Coupon\n'
+                                '        C. (unavailable)         F. Log out\n\n'
+                                '        > ').lower()
             if game_choice == 'a':
                 guess_the_number(user)
             elif game_choice == 'b':
@@ -448,12 +478,13 @@ def initial_menu(user):
                 if user.coin_limit >= 1:
                     add_coins(user)
                 elif user.coin_limit < 1:
-                    print('You have already reached your add-coins limit.')
+                    print('    You have already reached your add-coins limit.')
                     time.sleep(1)
             elif game_choice == 'f':
-                last_prompt = input('Are you sure? (Your data will be saved.)\n(Yes/No): ').lower()
+                last_prompt = input('    Are you sure? (Your data will be saved.)\n'
+                                    '    (Yes/No): ').lower()
                 if last_prompt == 'yes' or last_prompt == 'y':
-                    print('Returning to log-in screen...')
+                    print('\n    Returning to log-in screen...')
                     time.sleep(1)
                     save_data(user)
                     add_logs(f"{user.name} has logged out.")
@@ -461,7 +492,7 @@ def initial_menu(user):
                 else:
                     os.system('cls')
             else:
-                print('Enter the letter of desired option only.')
+                print('    Enter the letter of desired option only.')
                 time.sleep(1.5)
                 refresh_screen()
 
@@ -470,55 +501,57 @@ def initial_menu(user):
 def high_score_banner():
     os.system('cls')
     print("""
-           #==========================================#
-           ||        Welcome to CASINO GAMES         ||
-           ||  This game was made by Glenn Castillo  ||
-           #==========================================#""")
+    
+               #==========================================#
+               ||        Welcome to CASINO GAMES         ||
+               ||  This game was made by Glenn Castillo  ||
+               #==========================================#""")
 
 
 def high_score_ui():
     while 1:
         high_score_banner()
-        print('\n           ================[LEADERBOARD]===============')
-        print('                          Top Players')
+        print('\n               ================[LEADERBOARD]===============')
+        print('                                Top Players')
         c.execute("SELECT name, coins FROM Accounts WHERE name != 'Administrator' AND coins != 0 ORDER BY coins DESC")
         high_score_data = c.fetchall()
         if not high_score_data:
-            print(f'                            No Data')
+            print(f'                                No Data')
         else:
             for i in range(len(high_score_data) if len(high_score_data) <= 5 else 5):
                 print(f'                         {i + 1}. {high_score_data[i][1]:,} - {high_score_data[i][0]}')
-        print('\n                        Highest Coins Achieved')
+        print('\n                          Highest Coins Achieved')
         c.execute("SELECT name, highest_coin FROM Leaderboard WHERE name != 'Administrator' ORDER BY highest_coin DESC")
         highest_coins_data = c.fetchall()
         if not highest_coins_data:
-            print(f'                            No Data')
+            print(f'                                No Data')
         else:
             for i in range(len(highest_coins_data) if len(highest_coins_data) <= 5 else 5):
                 print(f'                         {i + 1}. {highest_coins_data[i][1]:,} - {highest_coins_data[i][0]}')
-        print('\n                         Highest Bidders')
+        print('\n                             Highest Bidders')
         c.execute("SELECT name, biggest_bid FROM Leaderboard where name != 'Administrator' ORDER BY biggest_bid DESC")
         biggest_bid_data = c.fetchall()
         if not biggest_bid_data:
-            print(f'                            No Data')
+            print(f'                                No Data')
         else:
             for i in range(len(biggest_bid_data) if len(biggest_bid_data) <= 5 else 5):
                 print(f'                         {i + 1}. {biggest_bid_data[i][1]:,} - {biggest_bid_data[i][0]}')
-        print('\n                        Bankrupt Players')
+        print('\n                            Bankrupt Players')
         c.execute("SELECT name, coins FROM Accounts WHERE name != 'Administrator' AND coins = 0 AND coin_limit = 0")
         bankrupt_data = c.fetchall()
         if not bankrupt_data:
-            print(f'                            No Data')
+            print(f'                                No Data')
         else:
             for i in range(len(bankrupt_data) if len(bankrupt_data) <= 5 else 5):
                 print(f'                         {i + 1}. {bankrupt_data[i][0]}')
-        print("           ============================================")
-        prompt = input('                     Return to main page?\n                        >  ')
+        print("               ============================================")
+        prompt = input('                         Return to main page?\n                        >  ')
         if prompt == 'yes' or prompt == 'y':
+
             os.system('cls')
             break
         else:
-            print('                     Refreshing the list...')
+            print('                         Refreshing the list...')
             time.sleep(1)
 
 
@@ -765,11 +798,16 @@ def admin_view_logs():
         log_file = open_file.read()
         print(log_file.translate(decrypt))
         print('======================================================================')
-        prompt = input('Exit? ')
+        prompt = input('Exit? ').lower()
         if prompt == 'yes' or prompt == 'y':
             open_file.close()
             add_logs(f"Administrator has viewed the logs")
             break
+        elif prompt == 'clear logs' or prompt == 'clear log' or prompt == 'clear':
+            file = open('logs.txt', 'w')
+            file.close()
+            add_logs('Administrator has cleared the logs')
+            continue
         else:
             print('Refreshing')
             refresh_screen()
@@ -897,19 +935,20 @@ def admin_ui(user):
         else:
             display_status(user)
             game_choice = input("""
-==============================[ADMIN=UI]==============================
+    ==============================[ADMIN=UI]==============================
 
-       1. Manage Accounts       4. Change Subscription
-       2. Add Coins             5. View Logs
-       3. Add Coin-Limit        6. Manage Database
-   
-======================================================================
-       0. Log out
-       > """)
-            if game_choice == '0':
-                last_prompt = input('\nAre you sure? (Your data will be saved.)\n(Yes/No): ').lower()
+        1. Manage Accounts       4. Change Subscription
+        2. Add Coins             5. View Logs
+        3. Add Coin-Limit        6. Manage Database
+
+    ======================================================================
+        F. Log out
+        > """).lower()
+            if game_choice == 'f':
+                last_prompt = input('\n    Are you sure? (Your data will be saved.)\n'
+                                    '    (Yes/No): ').lower()
                 if last_prompt == 'yes' or last_prompt == 'y':
-                    print('Returning to log-in screen...')
+                    print('\n    Returning to log-in screen...')
                     time.sleep(1)
                     save_data(user)
                     add_logs('Administrator has logged out.')
@@ -929,7 +968,7 @@ def admin_ui(user):
             elif game_choice == '6':
                 admin_manage_database()
             else:
-                print('Enter the letter of desired option only.')
+                print('\n        Enter the letter of desired option only.')
                 time.sleep(1.5)
                 refresh_screen()
 
@@ -937,8 +976,8 @@ def admin_ui(user):
 # =======================================LOG=IN=INTERFACE===============================================
 def display_status(user):
     os.system('cls')
-    print(f"""===============================[STATUS]===============================
-        
+    print(f"""
+    ===============================[STATUS]===============================
         Username: {user.name}
         Age: {user.age}
         Subscription: {user.user_type}
@@ -948,12 +987,13 @@ def display_status(user):
 
 
 def registration_banner():
-    print('============================[REGISTRATION]============================')
+    print('    ============================[REGISTRATION]============================')
 
 
 def reg_status(name, age, coins, user_type, coin_limit, password):
     os.system('cls')
-    print(f"""===============================[STATUS]===============================
+    print(f"""
+    ===============================[STATUS]===============================
         Username: {name}
         Age: {age}
         Subscription: {user_type}
@@ -966,7 +1006,8 @@ def get_name():
     while 1:
         reg_status('', '', '', '', '', '')
         registration_banner()
-        name = input('\nThe username must be 3 to 10 alphanumeric characters and no spaces.\nEnter your username: ')
+        name = input('\n    The username must be 3 to 10 alphanumeric characters and no spaces.\n'
+                     '    Enter your username: ')
         if 3 <= len(name) <= 10 and ' ' not in name:
             verifier = check_data(name)
             if verifier:
@@ -982,23 +1023,23 @@ def get_age(name):
     while 1:
         reg_status(name, '', '', '', '', '')
         registration_banner()
-        print('\nYour age must be 18 or above to play gambling games.')
+        print('\n    Your age must be 18 or above to play gambling games.')
         try:
-            age = int(input('Enter your age: '))
+            age = int(input('    Enter your age: '))
             if age < 18:
-                print('You are not allowed to play gambling games.\nProgram will exit...')
+                print('    You are not allowed to play gambling games.\nProgram will exit...')
                 time.sleep(3)
                 quit()
             elif 18 <= age <= 100:
                 return age
             elif age > 100:
-                print('You seem too impossible to be alive.')
+                print('    You seem too impossible to be alive.')
                 time.sleep(1.5)
             else:
-                print('Please enter a valid age value.')
+                print('    Please enter a valid age value.')
                 time.sleep(1.5)
         except ValueError:
-            print('Please enter a valid age value.')
+            print('    Please enter a valid age value.')
             time.sleep(1.5)
 
 
@@ -1007,8 +1048,11 @@ def get_user_type(name, age):
         subscription_list = {'a': 'Premium User', 'b': 'Normal User'}
         reg_status(name, age, '', '', '', '')
         registration_banner()
-        prompt = input(
-            '\nEnter your subscription type:\n\nA. Premium User (Requires subscription key)\nB. Normal User (Does not require subscription key)\n\n(Letter only.)\n> ').lower()
+        prompt = input('\n    Enter your subscription type:\n'
+                       '    A. Premium User (Requires subscription key)\n'
+                       '    B. Normal User (Does not require subscription key)\n\n'
+                       '    (Letter only.)\n\n'
+                       '    > ').lower()
         if prompt == 'a':
             subscription_key = 'glenn'
             while 2:
@@ -1016,25 +1060,26 @@ def get_user_type(name, age):
                 registration_banner()
                 verification = password_validator('subscription', subscription_key)
                 if verification:
-                    print('Successful!')
+                    print('       Successful!')
                     time.sleep(1)
                     return subscription_list['a'], 500, 3
                 elif not verification:
                     while 3:
                         reg_status(name, age, '', '', '', '')
                         registration_banner()
-                        prompt2 = input(
-                            'You have entered the wrong subscription key. Would you like to try again?\n(Yes/No): ')
+                        prompt2 = input('    You have entered the wrong subscription key. Would you like to try again?\n'
+                                        '    (Yes/No):\n'
+                                        '    > ')
                         if prompt2 == 'yes' or prompt2 == 'y':
                             break
                         elif prompt2 == 'no' or prompt2 == 'n':
                             return subscription_list['b'], 200, 1
                         else:
-                            print("Enter 'YES' or 'NO' only.")
+                            print("    Enter 'YES' or 'NO' only.")
         elif prompt == 'b':
             return subscription_list['b'], 200, 1
         else:
-            print("Enter 'A' or 'B' only.")
+            print("    Enter 'A' or 'B' only.")
 
 
 def get_pass(name, age, coins, user_type, coin_limit):
@@ -1042,21 +1087,21 @@ def get_pass(name, age, coins, user_type, coin_limit):
         reg_status(name, age, coins, user_type, coin_limit, '')
         registration_banner()
         password = getpass.getpass(
-            prompt='\nThe password must be 3 to 10 alphanumeric characters and no spaces.\nEnter your password: ')
+            prompt='\n    The password must be 3 to 10 alphanumeric characters and no spaces.\n'
+                   '    Enter your password: ')
         if 3 <= len(password) <= 10 and ' ' not in password:
             while 2:
                 reg_status(name, age, coins, user_type, coin_limit, '')
                 registration_banner()
-                verify = getpass.getpass(prompt='\nVerify your password: ')
+                verify = getpass.getpass(prompt='\n    Verify your password: ')
                 if password == verify:
-                    print('Password matched!')
+                    print('    Password matched!')
                     time.sleep(1)
-                    print('Returning to log-in screen...')
+                    print('    Returning to log-in screen...')
                     time.sleep(1)
                     return password
                 else:
-                    prompt = input(
-                        'Verification does not matched your password, would you like to try again? (Yes/No): ').lower()
+                    prompt = input('    Verification does not matched your password, would you like to try again? (Yes/No): ').lower()
                     if prompt == 'yes' or prompt == 'y':
                         continue
                     elif prompt == 'no' or prompt == 'n':
@@ -1080,55 +1125,68 @@ def login():
     while 1:
         os.system('cls')
         name = input(f"""
-
-
-                    Username: """)
-        password = getpass.getpass('                    Password: ')
-        user_data = get_data(name, password)
-        if user_data is None:
-            continue
+           
+               #==========================================#
+               ||           Welcome to CASINO            ||
+               ||  This game was made by Glenn Castillo  ||
+               #==========================================#
+                    "Type 'Back' or 'Quit' to return"
+                  
+                    ============[LOG=IN]=============
+                     Username: """)
+        if name == 'back' or name == 'quit' or name == 'b' or name == 'q':
+            return name
         else:
-            user = UserInfo(user_data[0], user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], 0, 0)
-            return user
+            password = getpass.getpass('                     Password: ')
+            user_data = get_data(name, password)
+            if user_data is None:
+                continue
+            else:
+                user = UserInfo(user_data[0], user_data[1], user_data[2], user_data[3], user_data[4], user_data[5], 0, 0)
+                return user
 
 
 def initial_screen():
     while 1:
         os.system('cls')
         prompt = input("""
-           #==========================================#
-           ||           Welcome to CASINO            ||
-           ||  This game was made by Glenn Castillo  ||
-           #==========================================#
-
-
-                    Do you have an account?
-                       Yes - User Login
-                       No - Registration
-                    ------------------------
-                    M - Multiplayer Battle
-                    C - Check Leaderboard
-                    Quit - Exit App
-
-
+           
+               #==========================================#
+               ||           Welcome to CASINO            ||
+               ||  This game was made by Glenn Castillo  ||
+               #==========================================#
+    
+    
+                        Do you have an account?
+                           Yes - User Login
+                           No - Registration
+                        ------------------------
+                        M - Multiplayer Battle
+                        C - Check Leaderboard
+                        Quit - Exit App
+    
+    
                             > """).lower()
         if prompt == 'yes' or prompt == 'y':
             user = login()
-            if user.name == 'Administrator':
-                add_logs('Administrator logged in.')
-                admin_ui(user)
+            if user == 'back' or user == 'quit' or user == 'b' or user == 'q':
+                continue
             else:
-                add_logs(f"{user.name} has logged in.")
-                initial_menu(user)
+                if user.name == 'Administrator':
+                    add_logs('Administrator logged in.')
+                    admin_ui(user)
+                else:
+                    add_logs(f"{user.name} has logged in.")
+                    initial_menu(user)
         elif prompt == 'no' or prompt == 'n':
             registration_menu()
         elif prompt == 'm' or prompt == 'multiplayer':
             pass
         elif prompt == 'c' or prompt == 'check':
             high_score_ui()
-        elif prompt == 'quit' or prompt == 'exit':
+        elif prompt == 'q' or prompt == 'quit':
             print('\n               Thank you for using this app. Goodbye!')
-            time.sleep(2)
+            time.sleep(1)
             c.close()
             conn.close()
             add_logs('User exit the game.')
