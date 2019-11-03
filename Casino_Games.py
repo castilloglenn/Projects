@@ -1,4 +1,4 @@
-import random, getpass, os, time, sqlite3
+import random, getpass, os, time, sqlite3, ftplib
 
 
 class UserInfo:
@@ -13,39 +13,39 @@ class UserInfo:
         self.reward = reward
 
 
-# ======================================DATABASE======================================
-conn = sqlite3.connect('lib.db')
-c = conn.cursor()
-c.execute('CREATE TABLE IF NOT EXISTS Accounts (name TEXT, age INTEGER, password TEXT, coins INTEGER, user_type TEXT, coin_limit INTEGER)')
-c.execute('CREATE TABLE IF NOT EXISTS Leaderboard (name TEXT, biggest_bid INTEGER, highest_coin INTEGER)')
+#=======================================DATABASE=======================================
+local_database = sqlite3.connect('lib.db')
+local_cursor = local_database.cursor()
+local_cursor.execute('CREATE TABLE IF NOT EXISTS Accounts (name TEXT, age INTEGER, password TEXT, coins INTEGER, user_type TEXT, coin_limit INTEGER)')
+local_cursor.execute('CREATE TABLE IF NOT EXISTS Leaderboard (name TEXT, biggest_bid INTEGER, highest_coin INTEGER)')
 
-c.execute("SELECT * FROM Accounts")
-data = c.fetchall()
-c.execute("SELECT * FROM Accounts WHERE name = 'Administrator'")
-verify_data = c.fetchone()
+local_cursor.execute("SELECT * FROM Accounts")
+data = local_cursor.fetchall()
+local_cursor.execute("SELECT * FROM Accounts WHERE name = 'Administrator'")
+verify_data = local_cursor.fetchone()
 if verify_data not in data:
-    c.execute('INSERT INTO Accounts VALUES (?, ?, ?, ?, ?, ?)',
-              ('Administrator', 69420, 'Admin@123', 10000000, 'Game Master', 1000))
-    conn.commit()
+    local_cursor.execute('INSERT INTO Accounts VALUES (?, ?, ?, ?, ?, ?)',
+                         ('Administrator', 69420, 'Admin@123', 10000000, 'Game Master', 1000))
+    local_database.commit()
 else:
     pass
 
 
 def register_data(user):
-    c.execute('SELECT * FROM Accounts')
-    data1 = c.fetchall()
+    local_cursor.execute('SELECT * FROM Accounts')
+    data1 = local_cursor.fetchall()
     if (user.name, user.age, user.password, user.coins, user.user_type, user.coin_limit) not in data1:
-        with conn:
-            c.execute('INSERT INTO Accounts VALUES (?, ?, ?, ?, ?, ?)',
-                      (user.name, user.age, user.password, user.coins, user.user_type, user.coin_limit))
-            c.execute('INSERT INTO Leaderboard VALUES (?, ?, ?)', (user.name, 0, 0))
+        with local_database:
+            local_cursor.execute('INSERT INTO Accounts VALUES (?, ?, ?, ?, ?, ?)',
+                                 (user.name, user.age, user.password, user.coins, user.user_type, user.coin_limit))
+            local_cursor.execute('INSERT INTO Leaderboard VALUES (?, ?, ?)', (user.name, 0, 0))
     else:
         print('User already exists.')
 
 
 def get_data(name, password):
-    c.execute(f"SELECT * FROM Accounts WHERE name = '{name}'")
-    data2 = c.fetchone()
+    local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{name}'")
+    data2 = local_cursor.fetchone()
     if data2 is None:
         print(f"\n           User {name} does not exist. (Username is case-sensitive)")
         time.sleep(1.5)
@@ -58,8 +58,8 @@ def get_data(name, password):
 
 
 def check_data(name):
-    c.execute(f"SELECT * FROM Accounts WHERE name = '{name}'")
-    data3 = c.fetchone()
+    local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{name}'")
+    data3 = local_cursor.fetchone()
     if data3 is None:
         return True
     else:
@@ -67,24 +67,208 @@ def check_data(name):
 
 
 def save_data(user):
-    c.execute('UPDATE Accounts SET coins = ?, coin_limit = ? WHERE name = ?', (user.coins, user.coin_limit, user.name))
-    conn.commit()
+    local_cursor.execute('UPDATE Accounts SET coins = ?, coin_limit = ? WHERE name = ?', (user.coins, user.coin_limit, user.name))
+    local_database.commit()
 
 
 def high_bid_update(user):
-    c.execute(f"SELECT * FROM Leaderboard WHERE name = '{user.name}'")
-    user_in_database = c.fetchone()
+    local_cursor.execute(f"SELECT * FROM Leaderboard WHERE name = '{user.name}'")
+    user_in_database = local_cursor.fetchone()
     if user.initial_bet > user_in_database[1]:
-        c.execute("UPDATE Leaderboard SET biggest_bid = ? WHERE name = ?", (user.initial_bet, user.name))
-        conn.commit()
+        local_cursor.execute("UPDATE Leaderboard SET biggest_bid = ? WHERE name = ?", (user.initial_bet, user.name))
+        local_database.commit()
 
 
 def high_coin_update(user):
-    c.execute(f"SELECT * FROM Leaderboard WHERE name = '{user.name}'")
-    coin_in_database = c.fetchone()
+    local_cursor.execute(f"SELECT * FROM Leaderboard WHERE name = '{user.name}'")
+    coin_in_database = local_cursor.fetchone()
     if user.coins > coin_in_database[2]:
-        c.execute("UPDATE Leaderboard SET highest_coin = ? WHERE name = ?", (user.coins, user.name))
-        conn.commit()
+        local_cursor.execute("UPDATE Leaderboard SET highest_coin = ? WHERE name = ?", (user.coins, user.name))
+        local_database.commit()
+
+
+#=========================================FTP========================================
+def loading_screen():
+    os.system('cls')
+    print('''
+
+
+
+
+                                  ♠
+                          ♥      ♣=♥      ♦
+                                ♦=♠=♣
+                       #=======♥=♦=♣=♠=======#
+                       ||   L O A D I N G   ||
+                       ||   (Do not close)  ||
+                       #=======♠=♣=♦=♥=======#
+                                ♦=♠=♣
+                          ♣      ♣=♠      ♠
+                                  ♥''')
+
+
+def ftp_reconnecting():
+    os.system('cls')
+    print('''
+
+
+
+
+                                  ♠
+                          ♥      ♣=♥      ♦
+                                ♦=♠=♣
+                       #=======♥=♦=♣=♠=======#
+                       || CONNECTION ERROR: ||
+                       ||  Reconnecting...  ||
+                       #=======♠=♣=♦=♥=======#
+                                ♦=♠=♣
+                          ♣      ♣=♠      ♠
+                                  ♥''')
+    time.sleep(2)
+
+
+def error_last():
+    os.system('cls')
+    print('''
+
+
+
+
+                                  ♠
+                          ♥      ♣=♥      ♦
+                                ♦=♠=♣
+                       #=======♥=♦=♣=♠=======#
+                       ||    DATABASE IS    ||
+                       ||    NOT UPDATED    ||
+                       #=======♠=♣=♦=♥=======#
+                                ♦=♠=♣
+                          ♣      ♣=♠      ♠
+                                  ♥''')
+    time.sleep(1)
+
+
+def download_global():
+    file_name = 'global.db'
+    if os.path.exists(file_name):
+        os.remove(file_name)
+        add_logs("File 'global.db' has been removed in directory")
+    elif not os.path.exists(file_name):
+        pass
+
+    counter = 0
+    while 1:
+        try:
+            if counter == 3:
+                error_last()
+                return False
+            else:
+                add_logs('Connecting to FTP server')
+                ftp = ftplib.FTP('')
+                ftp.connect('files.000webhost.com', port=21)
+                ftp.login(user='rejuvenize', passwd='glenncastillo')
+                ftp.cwd('server')
+                add_logs('Connected to FTP server')
+                add_logs('Downloading global.db')
+                write_2local = open(file_name, 'wb')
+                ftp.retrbinary("RETR " + file_name, write_2local.write, 1024)
+                add_logs("File 'global.db' downloaded")
+                write_2local.close()
+                ftp.close()
+                return True
+        except ftplib.all_errors as msg:
+            ftp_reconnecting()
+            add_logs(f'Error while downloading global.lib:\n         {msg}')
+            counter += 1
+
+
+def upload_global():
+    counter = 0
+    while 1:
+        try:
+            if counter == 3:
+                error_last()
+                return False
+            else:
+                file_name = 'global.db'
+                add_logs('Connecting to FTP server')
+                ftp = ftplib.FTP('')
+                ftp.connect('files.000webhost.com', port=21)
+                ftp.login(user='rejuvenize', passwd='glenncastillo')
+                ftp.cwd('server')
+                add_logs('Connected to FTP server')
+                ftp.delete('global.db')
+                add_logs("Server's 'global.db' deleted")
+                ftp.storbinary('STOR ' + file_name, open(file_name, 'rb'))
+                add_logs("File 'global.db' uploaded")
+                ftp.close()
+                return True
+        except ftplib.all_errors as msg:
+            ftp_reconnecting()
+            add_logs(f'Error while uploading global.lib:\n         {msg}')
+            counter += 1
+
+
+def transfer_data(sender, receiver, location):
+    receiver_lib = sqlite3.connect(receiver)
+    receiver_cursor = receiver_lib.cursor()
+    sender_lib = sqlite3.connect(sender)
+    sender_cursor = sender_lib.cursor()
+
+    sender_cursor.execute('SELECT * FROM Accounts')
+    sender_data = sender_cursor.fetchall()
+    receiver_cursor.execute('SELECT * FROM Accounts')
+    receiver_data = receiver_cursor.fetchall()
+
+    for data_row in sender_data:
+        account_list = []
+        for s_row in receiver_data:
+            account_list.append(s_row[0])
+
+        if data_row[0] in account_list:
+            receiver_cursor.execute(f"UPDATE Accounts SET coins = {data_row[3]}, user_type = '{data_row[4]}', coin_limit = {data_row[5]} WHERE name = '{data_row[0]}' and password = '{data_row[2]}'")
+            receiver_lib.commit()
+            add_logs(f"[{location}] User {data_row[0]}'s account has been updated")
+        else:
+            receiver_cursor.execute("INSERT INTO Accounts VALUES (?, ?, ?, ?, ?, ?)", data_row)
+            receiver_lib.commit()
+            add_logs(f"[{location}] User {data_row[0]}'s account has been added")
+
+    sender_cursor.execute('SELECT * FROM Leaderboard')
+    send = sender_cursor.fetchall()
+    receiver_cursor.execute('SELECT * FROM Leaderboard')
+    receive = receiver_cursor.fetchall()
+
+    for data_row in send:
+        lead_list = []
+        for s_row in receive:
+            lead_list.append(s_row[0])
+
+        if data_row[0] in lead_list:
+            receiver_cursor.execute(f"UPDATE Leaderboard SET biggest_bid = {data_row[1]}, highest_coin = {data_row[2]} WHERE name = '{data_row[0]}'")
+            receiver_lib.commit()
+            add_logs(f"[{location}] User {data_row[0]}'s leaderboard account has been updated")
+        else:
+            receiver_cursor.execute("INSERT INTO Leaderboard VALUES (?, ?, ?)", data_row)
+            receiver_lib.commit()
+            add_logs(f"[{location}] User {data_row[0]}'s account has been updated")
+
+    add_logs(f"{location} database has been updated")
+
+
+def download_server_database():
+    loading_screen()
+    boole = download_global()
+    transfer_data('global.db', 'lib.db', 'Local') if boole else error_last()
+
+
+def upload_local_database():
+    loading_screen()
+    boole = download_global()
+    if boole:
+        transfer_data('lib.db', 'global.db', 'Server')
+        upload_global()
+    else:
+        error_last()
 
 
 #===================================LOGS=AND=ENCRYPTION===============================
@@ -112,7 +296,7 @@ def new_balance(coins):
 
 
 def password_wrong(name):
-    user_ans = input(f'           You have entered the wrong {name} key.\n           Would you like to try again? (Yes/No)\n> ').lower()
+    user_ans = input(f'           You have entered the wrong {name} key.\n           Would you like to try again? (Yes/No)\n    > ').lower()
     return True if user_ans == 'yes' or user_ans == 'y' else False
 
 
@@ -163,14 +347,18 @@ def bet_receiver(user):
 
 
 # =====================================ADD=COINS====================================
+def add_coins_banner():
+    print('    ==============================[ADD=COINS]=============================')
+
+
 def add_coins(user):
     coins_list = {'a': 50, 'b': 100, 'c': 250, 'd': 500, 'z': 1000}
     verify_key = {'a': 'alpha', 'b': 'bravo', 'c': 'charlie', 'd': 'delta', 'z': 'bonus'}
     master_key = 'castillo'
     while 1:
         display_status(user)
-        print('==============================[ADD=COINS]=============================')
-        prompt = input('\n           A. ADD COINS\n           B. ENTER COUPON CODE\n           C. BACK\n> ').lower()
+        add_coins_banner()
+        prompt = input('\n           A. ADD COINS\n           B. ENTER COUPON CODE\n           C. BACK\n    > ').lower()
         if prompt == 'a':
             while 2:
                 if user.coin_limit < 1:
@@ -178,7 +366,7 @@ def add_coins(user):
                     break
                 elif user.coin_limit >= 1:
                     display_status(user)
-                    print('==============================[ADD=COINS]=============================')
+                    add_coins_banner()
                     verification = password_validator('master', master_key)
                     if verification:
                         print(f'\n           Successful!')
@@ -186,8 +374,10 @@ def add_coins(user):
                         refresh_screen()
                         while 3:
                             display_status(user)
-                            print('==============================[ADD=COINS]=============================')
-                            addition = input('\nNow enter how many coins would you like to add:\nA. 50 Coins\nB. 100 Coins\nC. 250 Coins\nD. 500 Coins\n> ').lower()
+                            add_coins_banner()
+                            addition = input('\n           Now enter how many coins would you like to add:\n           A. 50 Coins\n'
+                                             '           B. 100 Coins\n           C. 250 Coins\n           D. 500 Coins\n'
+                                             '           > ').lower()
                             if addition in coins_list:
                                 verify = getpass.getpass(prompt='           Enter verification key: ').lower()
                                 if verify == verify_key[addition]:
@@ -198,7 +388,7 @@ def add_coins(user):
                                         print(f'           Your new coin balance is {user.coins}.\n')
                                         user.coin_limit -= 1
                                         save_data(user)
-                                        add_logs(f'           {user.name} added {coins_list[addition]} with {user.user_type}.')
+                                        add_logs(f'{user.name} added {coins_list[addition]} with {user.user_type}')
                                         time.sleep(2)
                                         break
                                     elif user.user_type == 'Premium User':
@@ -206,7 +396,7 @@ def add_coins(user):
                                         print(f'           Your new coin balance is {user.coins} (+50% Premium Bonus).\n')
                                         user.coin_limit -= 1
                                         save_data(user)
-                                        add_logs(f'           {user.name} added {coins_list[addition]} with {user.user_type}.')
+                                        add_logs(f'{user.name} added {coins_list[addition]} with {user.user_type}')
                                         time.sleep(2)
                                         break
                                 else:
@@ -226,9 +416,9 @@ def add_coins(user):
                             break
         elif prompt == 'b':
             display_status(user)
-            print('=============================[COUPON=CODE]============================')
+            print('    =============================[COUPON=CODE]============================')
             coupons = {'bsit1d':10000, 'cvsuimus':20000, 'glenncastillo':30000, 'meandtheboys':50000}
-            coupon_code = input('\n           Enter the coupon code:\n> ').lower()
+            coupon_code = input('\n           Enter the coupon code:\n    > ').lower()
             if coupon_code in coupons:
                 user.coins += coupons[coupon_code]
                 time.sleep(1)
@@ -464,7 +654,7 @@ def initial_menu(user):
                                 '        Choose a game:\n'
                                 '        A. Guess The Number      D. (unavailable)\n'
                                 '        B. Dice (Hi-Lo)          E. Add Coins/Enter Coupon\n'
-                                '        C. (unavailable)         F. Log out\n\n'
+                                '        C. (unavailable)         F. Log out/Save Data\n\n'
                                 '        > ').lower()
             if game_choice == 'a':
                 guess_the_number(user)
@@ -484,10 +674,12 @@ def initial_menu(user):
                 last_prompt = input('    Are you sure? (Your data will be saved.)\n'
                                     '    (Yes/No): ').lower()
                 if last_prompt == 'yes' or last_prompt == 'y':
+                    save_data(user)
                     print('\n    Returning to log-in screen...')
                     time.sleep(1)
-                    save_data(user)
-                    add_logs(f"{user.name} has logged out.")
+                    add_logs(f"{user.name} has logged out")
+                    add_logs(f"Uploading files to update the server's database")
+                    upload_local_database()
                     break
                 else:
                     os.system('cls')
@@ -513,32 +705,32 @@ def high_score_ui():
         high_score_banner()
         print('\n               ================[LEADERBOARD]===============')
         print('                                Top Players')
-        c.execute("SELECT name, coins FROM Accounts WHERE name != 'Administrator' AND coins != 0 ORDER BY coins DESC")
-        high_score_data = c.fetchall()
+        local_cursor.execute("SELECT name, coins FROM Accounts WHERE name != 'Administrator' AND coins != 0 ORDER BY coins DESC")
+        high_score_data = local_cursor.fetchall()
         if not high_score_data:
             print(f'                                No Data')
         else:
             for i in range(len(high_score_data) if len(high_score_data) <= 5 else 5):
                 print(f'                         {i + 1}. {high_score_data[i][1]:,} - {high_score_data[i][0]}')
         print('\n                          Highest Coins Achieved')
-        c.execute("SELECT name, highest_coin FROM Leaderboard WHERE name != 'Administrator' ORDER BY highest_coin DESC")
-        highest_coins_data = c.fetchall()
+        local_cursor.execute("SELECT name, highest_coin FROM Leaderboard WHERE name != 'Administrator' ORDER BY highest_coin DESC")
+        highest_coins_data = local_cursor.fetchall()
         if not highest_coins_data:
             print(f'                                No Data')
         else:
             for i in range(len(highest_coins_data) if len(highest_coins_data) <= 5 else 5):
                 print(f'                         {i + 1}. {highest_coins_data[i][1]:,} - {highest_coins_data[i][0]}')
         print('\n                             Highest Bidders')
-        c.execute("SELECT name, biggest_bid FROM Leaderboard where name != 'Administrator' ORDER BY biggest_bid DESC")
-        biggest_bid_data = c.fetchall()
+        local_cursor.execute("SELECT name, biggest_bid FROM Leaderboard where name != 'Administrator' ORDER BY biggest_bid DESC")
+        biggest_bid_data = local_cursor.fetchall()
         if not biggest_bid_data:
             print(f'                                No Data')
         else:
             for i in range(len(biggest_bid_data) if len(biggest_bid_data) <= 5 else 5):
                 print(f'                         {i + 1}. {biggest_bid_data[i][1]:,} - {biggest_bid_data[i][0]}')
         print('\n                            Bankrupt Players')
-        c.execute("SELECT name, coins FROM Accounts WHERE name != 'Administrator' AND coins = 0 AND coin_limit = 0")
-        bankrupt_data = c.fetchall()
+        local_cursor.execute("SELECT name, coins FROM Accounts WHERE name != 'Administrator' AND coins = 0 AND coin_limit = 0")
+        bankrupt_data = local_cursor.fetchall()
         if not bankrupt_data:
             print(f'                                No Data')
         else:
@@ -547,33 +739,32 @@ def high_score_ui():
         print("               ============================================")
         prompt = input('                         Return to main page?\n                        >  ')
         if prompt == 'yes' or prompt == 'y':
-
             os.system('cls')
             break
         else:
-            print('                         Refreshing the list...')
-            time.sleep(1)
+            continue
 
 
 # ======================================ADMINISTRATIVE=UI==============================================
 def admin_banner():
-    print(f"""===========================[ADMINISTRATOR]============================
-WARNING: This section is for the developer only. 
-         Actions done here is IRREVOCABLE.\n\n""")
+    print(f"""    
+    ===========================[ADMINISTRATOR]============================
+    WARNING: This section is for the developer only. 
+             Actions done here is IRREVOCABLE.\n\n""")
 
 
 def admin_manage_accounts():
     while 1:
         refresh_screen()
         admin_banner()
-        choice = input("A. VIEW DATABASE\nB. DELETE ACCOUNT\nC. BACK\n\n> ").lower()
+        choice = input("    A. VIEW DATABASE\n    B. DELETE ACCOUNT\n    C. BACK\n\n    > ").lower()
         if choice == 'a':
             while 2:
                 os.system('cls')
                 admin_banner()
-                c.execute("SELECT * FROM Accounts WHERE name != 'Administrator'")
-                list_account = c.fetchall()
-                print('ORDERED BY\n1.Name  2.Age  3.Password  4.Coins  5.User Type  6.Coin Limit'
+                local_cursor.execute("SELECT * FROM Accounts WHERE name != 'Administrator'")
+                list_account = local_cursor.fetchall()
+                print('    ORDERED BY\n    1.Name  2.Age  3.Password  4.Coins  5.User Type  6.Coin Limit'
                       '\n========================================================================')
                 counter = 1
                 for acc in list_account:
@@ -591,33 +782,33 @@ def admin_manage_accounts():
                 os.system('cls')
                 admin_banner()
                 master_key = 'delete'
-                input_name = input('ENTER THE NAME: ')
-                c.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
-                del_data = c.fetchone()
+                input_name = input('    ENTER THE NAME: ')
+                local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
+                del_data = local_cursor.fetchone()
                 if del_data is None:
-                    print(f'\nUSER {input_name} DOES NOT EXIST.')
-                    prompt = input('Would you like to try again?\n').lower()
+                    print(f'\n    USER {input_name} DOES NOT EXIST.')
+                    prompt = input('    Would you like to try again?\n').lower()
                     if prompt == 'yes' or prompt == 'y':
                         continue
                     elif prompt == 'no' or prompt == 'n':
                         break
                     else:
-                        print('YES or NO only.')
+                        print('    YES or NO only.')
                 else:
                     while 3:
                         os.system('cls')
                         admin_banner()
-                        last_chance = input('ARE YOU SURE?\n> ').lower()
+                        last_chance = input('    ARE YOU SURE?\n    > ').lower()
                         if last_chance == 'y' or last_chance == 'yes':
                             validator = password_validator('deletion', master_key)
                             if validator:
                                 print('Passwords matched!')
                                 time.sleep(1)
                                 print('Deleting User...')
-                                c.execute(f"DELETE FROM Accounts WHERE name == '{input_name}'")
-                                conn.commit()
-                                c.execute(f"DELETE FROM Leaderboard WHERE name == '{input_name}'")
-                                conn.commit()
+                                local_cursor.execute(f"DELETE FROM Accounts WHERE name == '{input_name}'")
+                                local_database.commit()
+                                local_cursor.execute(f"DELETE FROM Leaderboard WHERE name == '{input_name}'")
+                                local_database.commit()
                                 time.sleep(1)
                                 add_logs(f'Administrator deleted user {input_name}')
                                 break
@@ -644,12 +835,12 @@ def admin_add_coins():
         os.system('cls')
         admin_banner()
         master_key = 'add'
-        input_name = input('ENTER THE NAME: ')
-        c.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
-        add_coin_data = c.fetchone()
+        input_name = input('    ENTER THE NAME: ')
+        local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
+        add_coin_data = local_cursor.fetchone()
         if add_coin_data is None:
-            print(f'\nUSER {input_name} DOES NOT EXIST.')
-            prompt = input('Would you like to try again?\n').lower()
+            print(f'\n    USER {input_name} DOES NOT EXIST.')
+            prompt = input('    Would you like to try again?\n').lower()
             if prompt == 'yes' or prompt == 'y':
                 continue
             elif prompt == 'no' or prompt == 'n':
@@ -662,17 +853,17 @@ def admin_add_coins():
                 admin_banner()
                 validator = password_validator('verifier', master_key)
                 if validator:
-                    coin_amount = int(input("ENTER THE NUMBER OF COINS: "))
+                    coin_amount = int(input("    ENTER THE NUMBER OF COINS: "))
                     print(f"Adding {coin_amount} Coins to {input_name}...")
                     time.sleep(2)
-                    c.execute(f"UPDATE Accounts SET coins = {coin_amount} WHERE name = '{input_name}'")
-                    conn.commit()
+                    local_cursor.execute(f"UPDATE Accounts SET coins = {coin_amount} WHERE name = '{input_name}'")
+                    local_database.commit()
                     print('Added!')
                     time.sleep(1)
-                    add_logs(f'Administrator added {coin_amount} Coins to {input_name}.')
+                    add_logs(f'Administrator added {coin_amount} Coins to {input_name}')
                     break
                 else:
-                    prompt = input('\nPassword not matched.\nTry again?\n').lower()
+                    prompt = input('\n    Passwords not matched.\n    Try again?\n    ').lower()
                     if prompt == 'yes' or prompt == 'y':
                         continue
                     elif prompt == 'no' or prompt == 'n':
@@ -686,12 +877,12 @@ def admin_add_coin_limit():
         os.system('cls')
         admin_banner()
         master_key = 'change'
-        input_name = input('ENTER THE NAME: ')
-        c.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
-        add_coin_limit_data = c.fetchone()
+        input_name = input('    ENTER THE NAME: ')
+        local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
+        add_coin_limit_data = local_cursor.fetchone()
         if add_coin_limit_data is None:
-            print(f'\nUSER {input_name} DOES NOT EXIST.')
-            prompt = input('Would you like to try again?\n').lower()
+            print(f'\n    USER {input_name} DOES NOT EXIST.')
+            prompt = input('    Would you like to try again?\n').lower()
             if prompt == 'yes' or prompt == 'y':
                 continue
             elif prompt == 'no' or prompt == 'n':
@@ -704,23 +895,23 @@ def admin_add_coin_limit():
                 admin_banner()
                 validator = password_validator('verifier', master_key)
                 if validator:
-                    coin_limit_amount = int(input("ENTER NEW COIN LIMIT: "))
-                    print(f"Changing {input_name}'s coin limit to {coin_limit_amount}...")
+                    coin_limit_amount = int(input("    ENTER NEW COIN LIMIT: "))
+                    print(f"    Changing {input_name}'s coin limit to {coin_limit_amount}...")
                     time.sleep(2)
-                    c.execute(f"UPDATE Accounts SET coin_limit = {coin_limit_amount} WHERE name = '{input_name}'")
-                    conn.commit()
-                    print('Changed!')
+                    local_cursor.execute(f"UPDATE Accounts SET coin_limit = {coin_limit_amount} WHERE name = '{input_name}'")
+                    local_database.commit()
+                    print('    Changed!')
                     time.sleep(1)
                     add_logs(f"Administrator changed {input_name}'s coin-limit to {coin_limit_amount}")
                     break
                 else:
-                    prompt = input('\nPassword not matched.\nTry again?\n').lower()
+                    prompt = input('\n    Password not matched.\n    Try again?\n    ').lower()
                     if prompt == 'yes' or prompt == 'y':
                         continue
                     elif prompt == 'no' or prompt == 'n':
                         break
                     else:
-                        print('YES or NO only.')
+                        print('    YES or NO only.')
 
 
 def admin_change_subscription():
@@ -728,18 +919,18 @@ def admin_change_subscription():
         os.system('cls')
         admin_banner()
         master_key = 'change'
-        input_name = input('ENTER THE NAME: ')
-        c.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
-        change_sub_data = c.fetchone()
+        input_name = input('    ENTER THE NAME: ')
+        local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
+        change_sub_data = local_cursor.fetchone()
         if change_sub_data is None:
-            print(f'\nUSER {input_name} DOES NOT EXIST.')
-            prompt = input('Would you like to try again?\n').lower()
+            print(f'\n    USER {input_name} DOES NOT EXIST.')
+            prompt = input('    Would you like to try again?\n    ').lower()
             if prompt == 'yes' or prompt == 'y':
                 continue
             elif prompt == 'no' or prompt == 'n':
                 break
             else:
-                print('YES or NO only.')
+                print('    YES or NO only.')
         else:
             while 2:
                 os.system('cls')
@@ -748,45 +939,45 @@ def admin_change_subscription():
                 if validator:
                     os.system('cls')
                     admin_banner()
-                    c.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
-                    new_data = c.fetchone()
-                    print(f"User {input_name} is a {new_data[4]}")
+                    local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
+                    new_data = local_cursor.fetchone()
+                    print(f"    User {input_name} is a {new_data[4]}")
                     subs = {'a': 'Premium User', 'b': 'Normal User'}
-                    new_subscription = input("ENTER NEW SUBSCRIPTION:\nA. Premium User\nB. Normal User\n> ").lower()
+                    new_subscription = input("    ENTER NEW SUBSCRIPTION:\n    A. Premium User\n    B. Normal User\n    > ").lower()
                     if new_subscription == 'a':
                         if new_data[4] == subs['a']:
-                            print('Subscription is same as current.')
+                            print('    Subscription is same as current.')
                             time.sleep(2)
                         else:
-                            print(f"Changing {input_name}'s subscription to {subs[new_subscription]}...")
+                            print(f"    Changing {input_name}'s subscription to {subs[new_subscription]}...")
                             time.sleep(2)
-                            c.execute(f"UPDATE Accounts SET user_type = '{subs[new_subscription]}' WHERE name = '{input_name}'")
-                            conn.commit()
-                            print('Changed!')
+                            local_cursor.execute(f"UPDATE Accounts SET user_type = '{subs[new_subscription]}' WHERE name = '{input_name}'")
+                            local_database.commit()
+                            print('    Changed!')
                             add_logs(f"Administrator changed {input_name}'s subscription to {subs[new_subscription]}")
                             time.sleep(1)
                             break
                     elif new_subscription == 'b':
                         if new_data[4] == subs['b']:
-                            print('Subscription is same as current.')
+                            print('    Subscription is same as current.')
                             time.sleep(2)
                         else:
-                            print(f"Changing {input_name}'s subscription to {subs[new_subscription]}...")
+                            print(f"    Changing {input_name}'s subscription to {subs[new_subscription]}...")
                             time.sleep(2)
-                            c.execute(f"UPDATE Accounts SET user_type = '{subs[new_subscription]}' WHERE name = '{input_name}'")
-                            conn.commit()
-                            print('Changed!')
+                            local_cursor.execute(f"UPDATE Accounts SET user_type = '{subs[new_subscription]}' WHERE name = '{input_name}'")
+                            local_database.commit()
+                            print('    Changed!')
                             add_logs(f"Administrator changed {input_name}'s subscription to {subs[new_subscription]}")
                             time.sleep(1)
                             break
                 else:
-                    prompt = input('\nPassword not matched.\nTry again?\n').lower()
+                    prompt = input('\n    Password not matched.\n    Try again?\n    ').lower()
                     if prompt == 'yes' or prompt == 'y':
                         continue
                     elif prompt == 'no' or prompt == 'n':
                         break
                     else:
-                        print('YES or NO only.')
+                        print('    YES or NO only.')
 
 
 def admin_view_logs():
@@ -798,8 +989,8 @@ def admin_view_logs():
         log_file = open_file.read()
         print(log_file.translate(decrypt))
         print('======================================================================')
-        prompt = input('Exit? ').lower()
-        if prompt == 'yes' or prompt == 'y':
+        prompt = input('    Exit or Clear Logs? ').lower()
+        if prompt == 'exit' or prompt == 'y' or prompt == 'yes':
             open_file.close()
             add_logs(f"Administrator has viewed the logs")
             break
@@ -809,7 +1000,7 @@ def admin_view_logs():
             add_logs('Administrator has cleared the logs')
             continue
         else:
-            print('Refreshing')
+            print('    Refreshing')
             refresh_screen()
 
 
@@ -817,15 +1008,15 @@ def admin_manage_database():
     while 1:
         refresh_screen()
         admin_banner()
-        choice = input("A. BACKUP DATABASE\nB. UPDATE DATABASE\nC. DELETE DATABASE\nD. BACK\n\n> ").lower()
+        choice = input("    A. BACKUP DATABASE\n    B. UPDATE DATABASE\n    C. DELETE DATABASE\n    D. BACK\n\n    > ").lower()
         if choice == 'a':
             refresh_screen()
             admin_banner()
-            prompt = input('ARE YOU SURE YOU WANT TO BACKUP THE DATABASE FILE?\n> ').lower()
+            prompt = input('    ARE YOU SURE YOU WANT TO BACKUP THE DATABASE FILE?\n    > ').lower()
             if prompt == 'yes' or prompt == 'y':
                 backup_file = sqlite3.connect('lib_backup.db')
-                conn.backup(backup_file)
-                print('\nDATABASE HAS BEEN BACKUP TO FILE NAME "lib_backup.db" OF THE SAME DIRECTORY.')
+                local_database.backup(backup_file)
+                print('\n    DATABASE HAS BEEN BACKUP TO FILE NAME "lib_backup.db" OF THE SAME DIRECTORY.')
                 time.sleep(2)
                 print('Returning...')
                 time.sleep(1)
@@ -842,99 +1033,57 @@ def admin_manage_database():
                            '(FILE lib_backup.db MUST BE ON THE SAME DIRECTORY)\n'
                            '> ').lower()
             if prompt == 'yes' or prompt == 'y':
-                backup_file = sqlite3.connect('lib_backup.db')
-                backup_c = backup_file.cursor()
-
-                backup_c.execute('SELECT * FROM Accounts')
-                backup_data = backup_c.fetchall()
-
-                c.execute('SELECT * FROM Accounts')
-                my_data = c.fetchall()
-
-                for backup_row in backup_data:
-                    for my_data_row in my_data:
-                        if backup_row[0] == my_data_row[0] and backup_row[2] == my_data_row[2]:
-                            c.execute(f"UPDATE Accounts SET coins = {backup_row[3]}, user_type = '{backup_row[4]}', coin_limit = {backup_row[5]} WHERE name = '{backup_row[0]}' AND password = '{backup_row[2]}'")
-                            conn.commit()
-                            add_logs(f"BACKUP LOGS: {backup_row[0]}'s account has been updated")
-                    if backup_row not in my_data:
-                        c.execute(f"INSERT INTO Accounts VALUES (?, ?, ?, ?, ?, ?)", backup_row)
-                        conn.commit()
-                        add_logs(f'BACKUP LOGS: User {backup_row[0]} has been added')
-
-                backup_c.execute('SELECT * FROM Leaderboard')
-                backup_data_l = backup_c.fetchall()
-
-                c.execute('SELECT * FROM Leaderboard')
-                my_data_l = c.fetchall()
-
-                for backup_row in backup_data_l:
-                    for my_data_row in my_data_l:
-                        if backup_row[0] == my_data_row[0]:
-                            c.execute(
-                                f"UPDATE Leaderboard SET biggest_bid = {backup_row[1]}, highest_coin = {backup_row[2]} WHERE name = '{backup_row[0]}'")
-                            conn.commit()
-                            add_logs(f"BACKUP LOGS: {backup_row[0]}'s leaderboard account has been updated")
-                    if backup_row not in my_data_l:
-                        c.execute(f"INSERT INTO Leaderboard VALUES (?, ?, ?)", backup_row)
-                        conn.commit()
-                        add_logs(f'BACKUP LOGS: User {backup_row[0]} in leaderboard has been added')
-
+                transfer_data('lib_backup.db', 'lib.db', 'Backup')
                 time.sleep(2)
-                print('\nTHE DATABASE HAS BEEN UPDATED.')
+                print('\n    THE DATABASE HAS BEEN UPDATED.')
                 time.sleep(1)
-                print('Returning...')
+                print('    Returning...')
                 time.sleep(1)
                 add_logs('Administrator has updated the database')
                 break
             else:
-                print('NO ACTIONS HAS BEEN TAKEN')
+                print('    NO ACTIONS HAS BEEN TAKEN')
                 time.sleep(1)
         elif choice == 'c':
             refresh_screen()
             admin_banner()
-            prompt = input('ARE YOU SURE YOU WANT TO DELETE THE DATABASE?\n(REQUIRES RESTART OF THE GAME)\n> ').lower()
+            prompt = input('    ARE YOU SURE YOU WANT TO DELETE THE DATABASE?\n    (REQUIRES RESTART OF THE GAME)\n    > ').lower()
             if prompt == 'yes' or prompt == 'y':
                 add_logs('Administrator tries to delete the database...')
-                another_prompt = input('\nFINAL DECISION?\n> ').lower()
+                another_prompt = input('\n    FINAL DECISION?\n    > ').lower()
                 if another_prompt == 'yes' or 'y':
                     a = 'delete'
                     b = 'the'
                     d = 'database'
-                    first_pass = getpass.getpass(prompt='Enter the first deletion key: ').lower()
+                    first_pass = getpass.getpass(prompt='    Enter the first deletion key: ').lower()
                     if first_pass == a:
-                        second_pass = getpass.getpass(prompt='Enter the second deletion key: ').lower()
+                        second_pass = getpass.getpass(prompt='    Enter the second deletion key: ').lower()
                         if second_pass == b:
-                            third_pass = getpass.getpass(prompt='Enter the third deletion key: ').lower()
+                            third_pass = getpass.getpass(prompt='    Enter the third deletion key: ').lower()
                             if third_pass == d:
-                                c.execute('DELETE FROM Accounts')
-                                conn.commit()
-                                c.execute('DELETE FROM Leaderboard')
-                                conn.commit()
-                                print('The database has been wiped out of existence.')
+                                local_cursor.execute('DELETE FROM Accounts')
+                                local_database.commit()
+                                local_cursor.execute('DELETE FROM Leaderboard')
+                                local_database.commit()
+                                print('    The database has been wiped out of existence.')
                                 add_logs('Administrator has DELETED the DATABASE')
                                 time.sleep(2)
                                 break
             else:
-                print('NO ACTIONS HAS BEEN TAKEN')
+                print('    NO ACTIONS HAS BEEN TAKEN')
                 time.sleep(1)
         elif choice == 'd':
             break
         else:
-            print('CHOOSE THE LETTER WISELY.')
+            print('    CHOOSE THE LETTER WISELY.')
             time.sleep(1.5)
 
 
 
 def admin_ui(user):
     while True:
-        if user.coins <= 0 and user.coin_limit <= 0:
-            print('\n\n You do not have enough coins to play. Please contact developer to buy more coins.')
-            time.sleep(5)
-            break
-        else:
-            display_status(user)
-            game_choice = input("""
+        display_status(user)
+        game_choice = input("""
     ==============================[ADMIN=UI]==============================
 
         1. Manage Accounts       4. Change Subscription
@@ -944,33 +1093,34 @@ def admin_ui(user):
     ======================================================================
         F. Log out
         > """).lower()
-            if game_choice == 'f':
-                last_prompt = input('\n    Are you sure? (Your data will be saved.)\n'
-                                    '    (Yes/No): ').lower()
-                if last_prompt == 'yes' or last_prompt == 'y':
-                    print('\n    Returning to log-in screen...')
-                    time.sleep(1)
-                    save_data(user)
-                    add_logs('Administrator has logged out.')
-                    break
-                else:
-                    os.system('cls')
-            elif game_choice == '1':
-                admin_manage_accounts()
-            elif game_choice == '2':
-                admin_add_coins()
-            elif game_choice == '3':
-                admin_add_coin_limit()
-            elif game_choice == '4':
-                admin_change_subscription()
-            elif game_choice == '5':
-                admin_view_logs()
-            elif game_choice == '6':
-                admin_manage_database()
+        if game_choice == 'f':
+            last_prompt = input('\n    Are you sure? (Your data will be saved.)\n'
+                                '    (Yes/No): ').lower()
+            if last_prompt == 'yes' or last_prompt == 'y':
+                print('\n    Returning to log-in screen...')
+                time.sleep(1)
+                save_data(user)
+                add_logs('Administrator has logged out')
+                upload_local_database()
+                break
             else:
-                print('\n        Enter the letter of desired option only.')
-                time.sleep(1.5)
-                refresh_screen()
+                os.system('cls')
+        elif game_choice == '1':
+            admin_manage_accounts()
+        elif game_choice == '2':
+            admin_add_coins()
+        elif game_choice == '3':
+            admin_add_coin_limit()
+        elif game_choice == '4':
+            admin_change_subscription()
+        elif game_choice == '5':
+            admin_view_logs()
+        elif game_choice == '6':
+            admin_manage_database()
+        else:
+            print('\n        Enter the letter of desired option only.')
+            time.sleep(1.5)
+            refresh_screen()
 
 
 # =======================================LOG=IN=INTERFACE===============================================
@@ -1118,7 +1268,9 @@ def registration_menu():
     user = UserInfo(name, age, password, coins, user_type, coin_limit, 0, 0)
     register_data(user)
     high_coin_update(user)
-    add_logs(f'User {user.name} ({user.user_type}) has registered into database.')
+    add_logs(f'User {user.name} ({user.user_type}) has registered into database')
+    add_logs(f"Sending {user.name} to server's database")
+    upload_local_database()
 
 
 def login():
@@ -1148,6 +1300,7 @@ def login():
 
 def initial_screen():
     while 1:
+        add_logs('Game has launched')
         os.system('cls')
         prompt = input("""
            
@@ -1173,10 +1326,10 @@ def initial_screen():
                 continue
             else:
                 if user.name == 'Administrator':
-                    add_logs('Administrator logged in.')
+                    add_logs('Administrator logged in')
                     admin_ui(user)
                 else:
-                    add_logs(f"{user.name} has logged in.")
+                    add_logs(f"{user.name} has logged in")
                     initial_menu(user)
         elif prompt == 'no' or prompt == 'n':
             registration_menu()
@@ -1187,13 +1340,13 @@ def initial_screen():
         elif prompt == 'q' or prompt == 'quit':
             print('\n               Thank you for using this app. Goodbye!')
             time.sleep(1)
-            c.close()
-            conn.close()
-            add_logs('User exit the game.')
+            local_cursor.close()
+            local_database.close()
+            add_logs('User has exit the game')
             quit()
         else:
             continue
 
 
-add_logs('Game has launched.')
+download_server_database()
 initial_screen()
