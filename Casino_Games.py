@@ -342,7 +342,7 @@ def bet_receiver(user):
         print(f"           [Total Reward]: {user.reward:,} Coins {additional[prompt] if prompt in additional else ''}")
         time.sleep(1.5)
         high_bid_update(user)
-        add_logs(f'{user.name} Bet: {user.initial_bet:,} {multiplier_value}X = {user.reward:,}')
+        add_logs(f"{user.name} Bet: {user.initial_bet:,} X {multiplier_value} {additional[prompt] if prompt in additional else ''} = {user.reward:,}")
     return user, quit1
 
 
@@ -424,7 +424,7 @@ def add_coins(user):
                 time.sleep(1)
                 print('           Congratulations!')
                 print(f"\n           {coupons[coupon_code]:,} has been added to your account.")
-                add_logs(f'           {user.name} redeemed coupon using {coupon_code}, {user.coins}')
+                add_logs(f'{user.name} redeemed coupon using {coupon_code}, {user.coins}')
                 time.sleep(2)
                 break
             else:
@@ -594,7 +594,7 @@ def guess_the_number(user):
                         user.coins -= user.initial_bet
                         print(f'{new_balance(user.coins)}')
                         save_data(user)
-                        add_logs(f'           {user.name} Lost Guess The Number with {user.initial_bet:,} Coins, {user.coins:,} Balance')
+                        add_logs(f'{user.name} Lost Guess The Number with {user.initial_bet:,} Coins, {user.coins:,} Balance')
                         break
                     else:
                         os.system('cls')
