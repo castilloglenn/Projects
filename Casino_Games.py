@@ -645,8 +645,9 @@ def guess_the_number(user):
 def initial_menu(user):
     while True:
         if user.coins <= 0 and user.coin_limit <= 0:
-            print('\n\n You do not have enough coins to play. Please contact developer to buy more coins.')
-            time.sleep(5)
+            print('\n\n You do not have enough coins to play. Please contact developer to buy more coins')
+            time.sleep(2)
+            upload_local_database()
             break
         else:
             display_status(user)
@@ -757,21 +758,20 @@ def admin_manage_accounts():
     while 1:
         refresh_screen()
         admin_banner()
-        choice = input("    A. VIEW DATABASE\n    B. DELETE ACCOUNT\n    C. BACK\n\n    > ").lower()
+        choice = input("       A. VIEW DATABASE\n       B. DELETE ACCOUNT\n       C. BACK\n\n       > ").lower()
         if choice == 'a':
             while 2:
                 os.system('cls')
                 admin_banner()
                 local_cursor.execute("SELECT * FROM Accounts WHERE name != 'Administrator'")
                 list_account = local_cursor.fetchall()
-                print('    ORDERED BY\n    1.Name  2.Age  3.Password  4.Coins  5.User Type  6.Coin Limit'
-                      '\n========================================================================')
+                print('       ORDERED BY\n       1.Name  2.Age  3.Password  4.Coins  5.User Type  6.Coin Limit'
+                      '\n    ========================================================================')
                 counter = 1
                 for acc in list_account:
-                    print(f'  {counter}. {acc[0]}  |  {acc[1]}  |  {acc[2]}  |  {acc[3]:,}  |  {acc[4]}  |  {acc[5]} ')
+                    print(f'    {counter}. {acc[0]}  |  {acc[1]}  |  {acc[2]}  |  {acc[3]:,}  |  {acc[4]}  |  {acc[5]} ')
                     counter += 1
-                choice1 = input(
-                    '========================================================================\nReturn? ').lower()
+                choice1 = input('    ========================================================================\n    Return? ').lower()
                 if choice1 == 'y' or choice1 == 'yes':
                     add_logs('Administrator checked the database files')
                     break
@@ -782,12 +782,12 @@ def admin_manage_accounts():
                 os.system('cls')
                 admin_banner()
                 master_key = 'delete'
-                input_name = input('    ENTER THE NAME: ')
+                input_name = input('       ENTER THE NAME: ')
                 local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
                 del_data = local_cursor.fetchone()
                 if del_data is None:
-                    print(f'\n    USER {input_name} DOES NOT EXIST.')
-                    prompt = input('    Would you like to try again?\n').lower()
+                    print(f'\n       USER {input_name} DOES NOT EXIST.')
+                    prompt = input('       Would you like to try again?\n').lower()
                     if prompt == 'yes' or prompt == 'y':
                         continue
                     elif prompt == 'no' or prompt == 'n':
@@ -798,19 +798,30 @@ def admin_manage_accounts():
                     while 3:
                         os.system('cls')
                         admin_banner()
-                        last_chance = input('    ARE YOU SURE?\n    > ').lower()
+                        last_chance = input('       ARE YOU SURE?\n       > ').lower()
                         if last_chance == 'y' or last_chance == 'yes':
                             validator = password_validator('deletion', master_key)
                             if validator:
-                                print('Passwords matched!')
+                                print('       Passwords matched!')
                                 time.sleep(1)
-                                print('Deleting User...')
+                                print('       Deleting User...')
                                 local_cursor.execute(f"DELETE FROM Accounts WHERE name == '{input_name}'")
                                 local_database.commit()
                                 local_cursor.execute(f"DELETE FROM Leaderboard WHERE name == '{input_name}'")
                                 local_database.commit()
                                 time.sleep(1)
                                 add_logs(f'Administrator deleted user {input_name}')
+                                download_global()
+                                global_lib = sqlite3.connect('global.db')
+                                global_cursor = global_lib.cursor()
+                                global_cursor.execute(f"DELETE FROM Accounts WHERE name == '{input_name}'")
+                                global_lib.commit()
+                                global_cursor.execute(f"DELETE FROM Leaderboard WHERE name == '{input_name}'")
+                                global_lib.commit()
+                                add_logs(f"User {input_name}'s account has been deleted in server's databse")
+                                global_cursor.close()
+                                global_lib.close()
+                                upload_global()
                                 break
                             else:
                                 prompt = input('\nPassword not matched.\nTry again?\n').lower()
@@ -819,11 +830,11 @@ def admin_manage_accounts():
                                 elif prompt == 'no' or prompt == 'n':
                                     break
                                 else:
-                                    print('YES or NO only.')
+                                    print('       YES or NO only.')
                         elif last_chance == 'n' or last_chance == 'no':
                             break
                         else:
-                            print('YES or NO only.')
+                            print('       YES or NO only.')
         elif choice == 'c':
             break
         else:
@@ -839,37 +850,37 @@ def admin_add_coins():
         local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
         add_coin_data = local_cursor.fetchone()
         if add_coin_data is None:
-            print(f'\n    USER {input_name} DOES NOT EXIST.')
-            prompt = input('    Would you like to try again?\n').lower()
+            print(f'\n       USER {input_name} DOES NOT EXIST.')
+            prompt = input('    Would you like to try again?\n    >').lower()
             if prompt == 'yes' or prompt == 'y':
                 continue
             elif prompt == 'no' or prompt == 'n':
                 break
             else:
-                print('YES or NO only.')
+                print('       YES or NO only.')
         else:
             while 2:
                 os.system('cls')
                 admin_banner()
                 validator = password_validator('verifier', master_key)
                 if validator:
-                    coin_amount = int(input("    ENTER THE NUMBER OF COINS: "))
-                    print(f"Adding {coin_amount} Coins to {input_name}...")
+                    coin_amount = int(input("       ENTER THE NUMBER OF COINS: "))
+                    print(f"       Adding {coin_amount} Coins to {input_name}...")
                     time.sleep(2)
                     local_cursor.execute(f"UPDATE Accounts SET coins = {coin_amount} WHERE name = '{input_name}'")
                     local_database.commit()
-                    print('Added!')
+                    print('       Added!')
                     time.sleep(1)
                     add_logs(f'Administrator added {coin_amount} Coins to {input_name}')
                     break
                 else:
-                    prompt = input('\n    Passwords not matched.\n    Try again?\n    ').lower()
+                    prompt = input('\n       Passwords not matched.\n       Try again?\n       > ').lower()
                     if prompt == 'yes' or prompt == 'y':
                         continue
                     elif prompt == 'no' or prompt == 'n':
                         break
                     else:
-                        print('YES or NO only.')
+                        print('       YES or NO only.')
 
 
 def admin_add_coin_limit():
@@ -877,41 +888,41 @@ def admin_add_coin_limit():
         os.system('cls')
         admin_banner()
         master_key = 'change'
-        input_name = input('    ENTER THE NAME: ')
+        input_name = input('       ENTER THE NAME: ')
         local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
         add_coin_limit_data = local_cursor.fetchone()
         if add_coin_limit_data is None:
-            print(f'\n    USER {input_name} DOES NOT EXIST.')
-            prompt = input('    Would you like to try again?\n').lower()
+            print(f'\n       USER {input_name} DOES NOT EXIST.')
+            prompt = input('       Would you like to try again?\n').lower()
             if prompt == 'yes' or prompt == 'y':
                 continue
             elif prompt == 'no' or prompt == 'n':
                 break
             else:
-                print('YES or NO only.')
+                print('       YES or NO only.')
         else:
             while 2:
                 os.system('cls')
                 admin_banner()
                 validator = password_validator('verifier', master_key)
                 if validator:
-                    coin_limit_amount = int(input("    ENTER NEW COIN LIMIT: "))
-                    print(f"    Changing {input_name}'s coin limit to {coin_limit_amount}...")
+                    coin_limit_amount = int(input("       ENTER NEW COIN LIMIT: "))
+                    print(f"       Changing {input_name}'s coin limit to {coin_limit_amount}...")
                     time.sleep(2)
                     local_cursor.execute(f"UPDATE Accounts SET coin_limit = {coin_limit_amount} WHERE name = '{input_name}'")
                     local_database.commit()
-                    print('    Changed!')
+                    print('       Changed!')
                     time.sleep(1)
                     add_logs(f"Administrator changed {input_name}'s coin-limit to {coin_limit_amount}")
                     break
                 else:
-                    prompt = input('\n    Password not matched.\n    Try again?\n    ').lower()
+                    prompt = input('\n       Password not matched.\n       Try again?\n       ').lower()
                     if prompt == 'yes' or prompt == 'y':
                         continue
                     elif prompt == 'no' or prompt == 'n':
                         break
                     else:
-                        print('    YES or NO only.')
+                        print('       YES or NO only.')
 
 
 def admin_change_subscription():
@@ -923,14 +934,14 @@ def admin_change_subscription():
         local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
         change_sub_data = local_cursor.fetchone()
         if change_sub_data is None:
-            print(f'\n    USER {input_name} DOES NOT EXIST.')
-            prompt = input('    Would you like to try again?\n    ').lower()
+            print(f'\n       USER {input_name} DOES NOT EXIST.')
+            prompt = input('       Would you like to try again?\n       > ').lower()
             if prompt == 'yes' or prompt == 'y':
                 continue
             elif prompt == 'no' or prompt == 'n':
                 break
             else:
-                print('    YES or NO only.')
+                print('       YES or NO only.')
         else:
             while 2:
                 os.system('cls')
@@ -941,55 +952,55 @@ def admin_change_subscription():
                     admin_banner()
                     local_cursor.execute(f"SELECT * FROM Accounts WHERE name = '{input_name}'")
                     new_data = local_cursor.fetchone()
-                    print(f"    User {input_name} is a {new_data[4]}")
+                    print(f"       User {input_name} is a {new_data[4]}")
                     subs = {'a': 'Premium User', 'b': 'Normal User'}
-                    new_subscription = input("    ENTER NEW SUBSCRIPTION:\n    A. Premium User\n    B. Normal User\n    > ").lower()
+                    new_subscription = input("       ENTER NEW SUBSCRIPTION:\n       A. Premium User\n       B. Normal User\n       > ").lower()
                     if new_subscription == 'a':
                         if new_data[4] == subs['a']:
-                            print('    Subscription is same as current.')
+                            print('       Subscription is same as current.')
                             time.sleep(2)
                         else:
-                            print(f"    Changing {input_name}'s subscription to {subs[new_subscription]}...")
+                            print(f"       Changing {input_name}'s subscription to {subs[new_subscription]}...")
                             time.sleep(2)
                             local_cursor.execute(f"UPDATE Accounts SET user_type = '{subs[new_subscription]}' WHERE name = '{input_name}'")
                             local_database.commit()
-                            print('    Changed!')
+                            print('       Changed!')
                             add_logs(f"Administrator changed {input_name}'s subscription to {subs[new_subscription]}")
                             time.sleep(1)
                             break
                     elif new_subscription == 'b':
                         if new_data[4] == subs['b']:
-                            print('    Subscription is same as current.')
+                            print('       Subscription is same as current.')
                             time.sleep(2)
                         else:
-                            print(f"    Changing {input_name}'s subscription to {subs[new_subscription]}...")
+                            print(f"       Changing {input_name}'s subscription to {subs[new_subscription]}...")
                             time.sleep(2)
                             local_cursor.execute(f"UPDATE Accounts SET user_type = '{subs[new_subscription]}' WHERE name = '{input_name}'")
                             local_database.commit()
-                            print('    Changed!')
+                            print('       Changed!')
                             add_logs(f"Administrator changed {input_name}'s subscription to {subs[new_subscription]}")
                             time.sleep(1)
                             break
                 else:
-                    prompt = input('\n    Password not matched.\n    Try again?\n    ').lower()
+                    prompt = input('\n       Password not matched.\n       Try again?\n       > ').lower()
                     if prompt == 'yes' or prompt == 'y':
                         continue
                     elif prompt == 'no' or prompt == 'n':
                         break
                     else:
-                        print('    YES or NO only.')
+                        print('       YES or NO only.')
 
 
 def admin_view_logs():
     while 1:
         os.system('cls')
         admin_banner()
-        print('=============================[USER=LOGS]==============================')
+        print('    =============================[USER=LOGS]==============================')
         open_file = open('logs.txt', 'r+')
         log_file = open_file.read()
-        print(log_file.translate(decrypt))
-        print('======================================================================')
-        prompt = input('    Exit or Clear Logs? ').lower()
+        print(f'    {log_file.translate(decrypt)}')
+        print('    ======================================================================')
+        prompt = input(' Exit or Clear Logs? ').lower()
         if prompt == 'exit' or prompt == 'y' or prompt == 'yes':
             open_file.close()
             add_logs(f"Administrator has viewed the logs")
@@ -1000,57 +1011,56 @@ def admin_view_logs():
             add_logs('Administrator has cleared the logs')
             continue
         else:
-            print('    Refreshing')
-            refresh_screen()
+            pass
 
 
 def admin_manage_database():
     while 1:
         refresh_screen()
         admin_banner()
-        choice = input("    A. BACKUP DATABASE\n    B. UPDATE DATABASE\n    C. DELETE DATABASE\n    D. BACK\n\n    > ").lower()
+        choice = input("       A. BACKUP DATABASE\n       B. UPDATE DATABASE\n       C. DELETE DATABASE\n       D. BACK\n\n       > ").lower()
         if choice == 'a':
             refresh_screen()
             admin_banner()
-            prompt = input('    ARE YOU SURE YOU WANT TO BACKUP THE DATABASE FILE?\n    > ').lower()
+            prompt = input('       ARE YOU SURE YOU WANT TO BACKUP THE DATABASE FILE?\n    > ').lower()
             if prompt == 'yes' or prompt == 'y':
                 backup_file = sqlite3.connect('lib_backup.db')
                 local_database.backup(backup_file)
-                print('\n    DATABASE HAS BEEN BACKUP TO FILE NAME "lib_backup.db" OF THE SAME DIRECTORY.')
+                print('\n       DATABASE HAS BEEN BACKUP TO FILE NAME "lib_backup.db" OF THE SAME DIRECTORY.')
                 time.sleep(2)
-                print('Returning...')
+                print('       Returning...')
                 time.sleep(1)
                 add_logs('Administrator backup the database')
                 backup_file.close()
                 break
             else:
-                print('NO ACTIONS HAS BEEN TAKEN')
+                print('       NO ACTIONS HAS BEEN TAKEN')
                 time.sleep(1)
         elif choice == 'b':
             refresh_screen()
             admin_banner()
-            prompt = input('ARE YOU SURE YOU WANT TO UPDATE THE DATABASE FILE FROM BACKUP?\n'
-                           '(FILE lib_backup.db MUST BE ON THE SAME DIRECTORY)\n'
-                           '> ').lower()
+            prompt = input('       ARE YOU SURE YOU WANT TO UPDATE THE DATABASE FILE FROM BACKUP?\n'
+                           '       (FILE lib_backup.db MUST BE ON THE SAME DIRECTORY)\n'
+                           '       > ').lower()
             if prompt == 'yes' or prompt == 'y':
                 transfer_data('lib_backup.db', 'lib.db', 'Backup')
                 time.sleep(2)
-                print('\n    THE DATABASE HAS BEEN UPDATED.')
+                print('\n       THE DATABASE HAS BEEN UPDATED.')
                 time.sleep(1)
-                print('    Returning...')
+                print('       Returning...')
                 time.sleep(1)
                 add_logs('Administrator has updated the database')
                 break
             else:
-                print('    NO ACTIONS HAS BEEN TAKEN')
+                print('       NO ACTIONS HAS BEEN TAKEN')
                 time.sleep(1)
         elif choice == 'c':
             refresh_screen()
             admin_banner()
-            prompt = input('    ARE YOU SURE YOU WANT TO DELETE THE DATABASE?\n    (REQUIRES RESTART OF THE GAME)\n    > ').lower()
+            prompt = input('       ARE YOU SURE YOU WANT TO DELETE THE DATABASE?\n    (REQUIRES RESTART OF THE GAME)\n    > ').lower()
             if prompt == 'yes' or prompt == 'y':
                 add_logs('Administrator tries to delete the database...')
-                another_prompt = input('\n    FINAL DECISION?\n    > ').lower()
+                another_prompt = input('\n       FINAL DECISION?\n    > ').lower()
                 if another_prompt == 'yes' or 'y':
                     a = 'delete'
                     b = 'the'
@@ -1065,17 +1075,17 @@ def admin_manage_database():
                                 local_database.commit()
                                 local_cursor.execute('DELETE FROM Leaderboard')
                                 local_database.commit()
-                                print('    The database has been wiped out of existence.')
+                                print('       The database has been wiped out of existence.')
                                 add_logs('Administrator has DELETED the DATABASE')
                                 time.sleep(2)
                                 break
             else:
-                print('    NO ACTIONS HAS BEEN TAKEN')
+                print('       NO ACTIONS HAS BEEN TAKEN')
                 time.sleep(1)
         elif choice == 'd':
             break
         else:
-            print('    CHOOSE THE LETTER WISELY.')
+            print('       CHOOSE THE LETTER WISELY.')
             time.sleep(1.5)
 
 
