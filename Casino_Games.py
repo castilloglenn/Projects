@@ -701,39 +701,75 @@ def high_score_banner():
                #==========================================#""")
 
 
+def empty_data():
+    print('                         Be the first on the list!')
+
+
 def high_score_ui():
     while 1:
         high_score_banner()
-        print('\n               ================[LEADERBOARD]===============')
-        print('                                Top Players')
+        print('\n               ===============[LEADERBOARD]================')
+        print('                               Top Players')
         local_cursor.execute("SELECT name, coins FROM Accounts WHERE name != 'Administrator' AND coins != 0 ORDER BY coins DESC")
         high_score_data = local_cursor.fetchall()
+        billionaire_list = []
+        millionaire_list = []
+        else_list = []
         if not high_score_data:
-            print(f'                                No Data')
+            empty_data()
         else:
-            for i in range(len(high_score_data) if len(high_score_data) <= 5 else 5):
-                print(f'                         {i + 1}. {high_score_data[i][1]:,} - {high_score_data[i][0]}')
-        print('\n                          Highest Coins Achieved')
+            bill_num = 1
+            mill_num = 1
+            else_num = 1
+            for i in range(len(high_score_data)):
+                if high_score_data[i][1] >= 1000000000:
+                    billionaire_list.append(f'                         {bill_num}. {high_score_data[i][1]:,} - {high_score_data[i][0]}')
+                    bill_num += 1
+                elif high_score_data[i][1] >= 1000000:
+                    millionaire_list.append(f'                         {mill_num}. {high_score_data[i][1]:,} - {high_score_data[i][0]}')
+                    mill_num += 1
+                else:
+                    else_list.append(f'                         {else_num}. {high_score_data[i][1]:,} - {high_score_data[i][0]}')
+                    else_num += 1
+        print("\n                            Billionaire's Club")
+        if not billionaire_list:
+            empty_data()
+        else:
+            for billionaire in billionaire_list:
+                print(billionaire)
+        print("\n                            Millionaire's Club")
+        if not millionaire_list:
+            empty_data()
+        else:
+            for millionaire in millionaire_list:
+                print(millionaire)
+        print('\n                           Highest Coins Achieved')
         local_cursor.execute("SELECT name, highest_coin FROM Leaderboard WHERE name != 'Administrator' ORDER BY highest_coin DESC")
         highest_coins_data = local_cursor.fetchall()
         if not highest_coins_data:
-            print(f'                                No Data')
+            empty_data()
         else:
             for i in range(len(highest_coins_data) if len(highest_coins_data) <= 5 else 5):
                 print(f'                         {i + 1}. {highest_coins_data[i][1]:,} - {highest_coins_data[i][0]}')
-        print('\n                             Highest Bidders')
+        print('\n                            Highest Bidders')
         local_cursor.execute("SELECT name, biggest_bid FROM Leaderboard where name != 'Administrator' ORDER BY biggest_bid DESC")
         biggest_bid_data = local_cursor.fetchall()
         if not biggest_bid_data:
-            print(f'                                No Data')
+            empty_data()
         else:
             for i in range(len(biggest_bid_data) if len(biggest_bid_data) <= 5 else 5):
                 print(f'                         {i + 1}. {biggest_bid_data[i][1]:,} - {biggest_bid_data[i][0]}')
-        print('\n                            Bankrupt Players')
+        print("\n                            Other Players")
+        if not else_list:
+            empty_data()
+        else:
+            for else_players in else_list:
+                print(else_players)
+        print('\n                           Bankrupt Players')
         local_cursor.execute("SELECT name, coins FROM Accounts WHERE name != 'Administrator' AND coins = 0 AND coin_limit = 0")
         bankrupt_data = local_cursor.fetchall()
         if not bankrupt_data:
-            print(f'                                No Data')
+            print(f'                               No Data')
         else:
             for i in range(len(bankrupt_data) if len(bankrupt_data) <= 5 else 5):
                 print(f'                         {i + 1}. {bankrupt_data[i][0]}')
