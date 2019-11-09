@@ -1,3 +1,4 @@
+# Stopped developing
 import random, getpass, os, time, sqlite3, ftplib
 
 
