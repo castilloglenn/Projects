@@ -4,6 +4,12 @@ from tkinter import messagebox
 from tkinter.font import BOLD
 
 
+class Employee:
+    def __init__(self, name, level):
+        self.name = name
+        self.level = level
+
+
 class LoginScreen(tk.Frame):
     def __init__(self):
         tk.Frame.__init__(self)
@@ -20,9 +26,9 @@ class LoginScreen(tk.Frame):
         self.user_var = tk.StringVar()
         self.pass_var = tk.StringVar()
 
-        title = tk.Label(self, text='Log-in to continue', font=('Trebuchet MS', 20, BOLD), bd=5)
+        title = tk.Label(self, text='Software Login', font=('Trebuchet MS', 20, BOLD), bd=5)
         title.grid(columnspan = 2)
-        username = tk.Label(self, text='Employee ID: ', font=('Trebuchet MS', 15))
+        username = tk.Label(self, text='Username: ', font=('Trebuchet MS', 15))
         username.grid(row=1)
         username1 = tk.Entry(self, textvariable=self.user_var, font=('Trebuchet MS', 15),
                                   bd=2, relief=tk.SUNKEN)
@@ -35,7 +41,7 @@ class LoginScreen(tk.Frame):
         password1.grid(row=2, column=1)
         login = tk.Button(self, text='Submit', font=('Trebuchet MS', 15), bd=5, relief=tk.RAISED,
                                command=lambda: self.verify(self.user_var.get(), self.pass_var.get()))
-        login.grid(row=3, columnspan=2)
+        login.grid(row=3, columnspan=2, pady=10)
 
 
     def verify(self, username, password):
@@ -70,7 +76,9 @@ class MainInterface(tk.Frame):
         height = self.master.winfo_screenheight()
         width = self.master.winfo_screenwidth()
         self.master.geometry(f'{int(width * 0.5)}x{int(height * 0.5)}+{int(width * 0.25)}+{int(height * 0.2)}')
+        self.master.config(pady=150, bg='sky blue')
 
+        #======================================MENU======================================
         self.menu_bar = tk.Menu(self)
         self.shift_menu = tk.Menu(self.menu_bar, tearoff=False)
         self.menu_bar.add_cascade(label='Shift', underline=0, menu=self.shift_menu)
@@ -115,7 +123,63 @@ class MainInterface(tk.Frame):
         self.master.config(borderwidth='20', menu=self.menu_bar)
         self.master.resizable(False, False)
 
+        #====================================LOGIN====================================
+        self.loginFrame = tk.Frame(self.master)
+        self.loginFrame.pack()
 
+        self.user_var = tk.StringVar()
+        self.pass_var = tk.StringVar()
+
+        self.title = tk.Label(self.loginFrame, text='GENERIC POS 1.0', font=('Trebuchet MS', 20, BOLD))
+        self.title.grid(columnspan=2)
+        self.title1 = tk.Label(self.loginFrame, text='Employee Log-In', font=('Trebuchet MS', 15))
+        self.title1.grid(row=1, columnspan=2)
+        self.username = tk.Label(self.loginFrame, text='ID Number:', font=('Trebuchet MS', 15))
+        self.username.grid(row=2, sticky=tk.E, padx=10)
+        self.username1 = tk.Entry(self.loginFrame, textvariable=self.user_var, font=('Trebuchet MS', 15),
+                                  bd=2, relief=tk.SUNKEN)
+        self.username1.grid(row=2, column=1, padx=10)
+        self.password = tk.Label(self.loginFrame, text='Password:', font=('Trebuchet MS', 15))
+        self.password.grid(row=3, sticky=tk.E, padx=10)
+        self.password1 = tk.Entry(self.loginFrame, textvariable=self.pass_var, font=('Trebuchet MS', 15), show='●',
+                                  bd=2, relief=tk.SUNKEN)
+        self.password1.bind('<Return>', lambda x: self.verifyEmployee(self.user_var.get(), self.pass_var.get()))
+        self.password1.grid(row=3, column=1, padx=10)
+        prompt = self.login = tk.Button(self.loginFrame, text='Submit', font=('Trebuchet MS', 15), bd=5, relief=tk.RAISED,
+                               command=lambda: self.verifyEmployee(self.user_var.get(), self.pass_var.get()))
+        self.login.grid(row=4, columnspan=2, pady=10)
+
+        #===================================POINT=OF=SALES===================================
+        employeesC.execute(f'SELECT * FROM Employees WHERE employeeID = {int(self.user_var.get())}')
+        employeeInfo = employeesC.fetchone()
+        self.user = Employee(employeeInfo[2], employeeInfo[4])
+
+        self.posFrame = tk.Frame(self.master)
+        self.posFrame.pack()
+
+        self.title = tk.Label(self.posFrame, text=f'Welcome, {self.user.name}', font=('Trebuchet MS', 20, BOLD))
+        self.title.grid(columnspan=2)
+
+
+    def verifyEmployee(self, username, password):
+        try:
+            employeesC.execute(f'SELECT * FROM Employees WHERE employeeID = {int(username)}')
+            employeeData = employeesC.fetchone()
+
+            if int(username) == employeeData[0] and password == employeeData[1]:
+                self.loginFrame.destroy()
+            else:
+                self.errorMessage()
+        except ValueError:
+            self.errorMessage()
+        except TypeError:
+            self.errorMessage()
+
+
+    def errorMessage(self):
+        messagebox.showinfo("Login Error", "Incorrect username or password.")
+        self.user_var.set('')
+        self.pass_var.set('')
 
     def doNothing(self):
         pass
