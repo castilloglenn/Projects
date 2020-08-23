@@ -89,7 +89,6 @@ def setup_board(quantity):
             board[x][y] = 1
             added.append((x, y))
         quantity -= 1
-    """
     # PULSAR, MINSIZE: 17 WIDTH, 17 LENGTH
     pulsar_x = [2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7,
                 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 11, 11, 11, 11, 12, 12, 12, 12, 14, 14, 14, 14, 14, 14]
@@ -97,6 +96,12 @@ def setup_board(quantity):
                 4, 5, 6, 10, 11, 12, 2, 7, 9, 14, 2, 7, 9, 14, 2, 7, 9, 14, 4, 5, 6, 10, 11, 12]
     for counter in range(0, len(pulsar_x)):
         board[pulsar_x[counter]][pulsar_y[counter]] = 1
+    """
+    # GLIDERS, MINSIZE: 10 WIDTH, 10 LENGTH
+    glider_x = [1, 2, 2, 3, 3, 6, 7, 7, 8, 8, 1, 2, 2, 3, 3]
+    glider_y = [3, 1, 3, 2, 3, 3, 1, 3, 2, 3, 8, 6, 8, 7, 8]
+    for counter in range(0, len(glider_x)):
+        board[glider_x[counter]][glider_y[counter]] = 1
 
 
 def main():
@@ -108,7 +113,7 @@ def main():
         valid = get_all_valid_coordinates(alive)
         evaluate_cells(valid)
         copy_board()
-        time.sleep(0.5)
+        time.sleep(0.2)
 
 
 if __name__ == "__main__":
