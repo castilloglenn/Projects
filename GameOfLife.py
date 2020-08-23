@@ -1,8 +1,10 @@
 import numpy as np
+import random as r
 import time, os
 
 
 # BOARD DIMENSIONS / STATEMENTS
+gen = 1
 BOARD_LENGTH = 60
 BOARD_WIDTH = 40
 board = [[0 for y in range(0, BOARD_LENGTH)] for x in range(0, BOARD_WIDTH)]
@@ -17,6 +19,7 @@ def copy_board():
 
 
 def print_gen(current):
+    global gen
     for row in current:
         for column in row:
             if column == 1:
@@ -24,6 +27,8 @@ def print_gen(current):
             else:
                 print(" ", end=" ")
         print()     # end row
+    print("GENERATION ", gen)
+    gen += 1
 
 
 def get_alive_coordinates():
@@ -59,6 +64,7 @@ def get_neighbors_count(coordinate):
     return count
 
 
+# RULES OF THE GAME
 def evaluate_cells(cells):
     for cell in cells:
         neighbor_count = get_neighbors_count(cell)
@@ -73,27 +79,28 @@ def evaluate_cells(cells):
             pass
 
 
-def setup_board():
-    # BLINKER
-    #board[5][5] = 1
-    #board[5][6] = 1
-    #board[5][7] = 1
-    # GLIDER #1
-    board[6][5] = 1
-    board[7][5] = 1
-    board[8][5] = 1
-    board[8][4] = 1
-    board[7][3] = 1
-    # GLIDER #2
-    board[16][15] = 1
-    board[17][15] = 1
-    board[18][15] = 1
-    board[18][14] = 1
-    board[17][13] = 1
+def setup_board(quantity):
+    """
+    added = []
+    while quantity > 0:
+        x = r.randint(0, BOARD_WIDTH - 1)
+        y = r.randint(0, BOARD_LENGTH - 1)
+        if (x, y) not in added:
+            board[x][y] = 1
+            added.append((x, y))
+        quantity -= 1
+    """
+    # PULSAR, MINSIZE: 17 WIDTH, 17 LENGTH
+    pulsar_x = [2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7,
+                9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 11, 11, 11, 11, 12, 12, 12, 12, 14, 14, 14, 14, 14, 14]
+    pulsar_y = [4, 5, 6, 10, 11, 12, 2, 7, 9, 14, 2, 7, 9, 14, 2, 7, 9, 14, 4, 5, 6, 10, 11, 12,
+                4, 5, 6, 10, 11, 12, 2, 7, 9, 14, 2, 7, 9, 14, 2, 7, 9, 14, 4, 5, 6, 10, 11, 12]
+    for counter in range(0, len(pulsar_x)):
+        board[pulsar_x[counter]][pulsar_y[counter]] = 1
 
 
 def main():
-    setup_board()
+    setup_board(400)
     while True:
         os.system("cls" if os.name == "nt" else "clear")
         print_gen(board)
@@ -101,7 +108,7 @@ def main():
         valid = get_all_valid_coordinates(alive)
         evaluate_cells(valid)
         copy_board()
-        time.sleep(0.2)
+        time.sleep(0.5)
 
 
 if __name__ == "__main__":
