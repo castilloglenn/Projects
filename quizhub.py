@@ -38,7 +38,7 @@ def create_database():
                     wrongAnswer3 VARCHAR(255)
                 );""")
     initial_check = get_record_by_question(check_entry(f"Welcome to {APP_TITLE}"))
-    if initial_check is None:
+    if initial_check is None and len(record_count()[0]) == 0:
         initial_record()
 
 
@@ -107,7 +107,9 @@ def new_record(record, toplevel):
     mb.showinfo(APP_TITLE, "Successfully inserted new record.", parent=toplevel)
     count = record_count()
     if len(count[0]) > 1:
-        remove_record(get_record_by_question(check_entry(f"Welcome to {APP_TITLE}"))[0])
+        check = get_record_by_question(check_entry(f"Welcome to {APP_TITLE}"))
+        if check is not None:
+            remove_record(check[0])
     update_entry_count()
 
 
@@ -134,7 +136,8 @@ def remove_record(qid):
 def check_entry(string):
     if (string == ""):
         return "Null"
-    return f"\"{string}\""
+    formatted_string = " ".join(string.strip().split())
+    return f"\"{formatted_string}\""
 
 
 def search_database(event):
@@ -185,6 +188,19 @@ def update_entry_count():
     records = record_count()
     total_entries['text'] = f"TOTAL QUESTIONS ENTERED: {len(records[0]):,}"
     total_answered['text'] = f"TOTAL CORRECT ANSWERS: {len(records[1]):,}"
+
+
+def refresh_entries(event):
+    global query_result, iterator_index
+    query_result = get_records_by_keyword(" ")
+    if len(query_result) == 0:
+        mb.showinfo("Query Result", "No results found.")
+    else:
+        if len(query_result) > 1:
+            next_button['state'] = NORMAL
+        search_label['text'] = "Search Question:"
+        update_display_values(0)
+
 #===========================END OF UTILITY COMMANDS=====================================
 
 #===========================TKINTER COMMANDS============================================
@@ -585,5 +601,6 @@ if __name__ == "__main__":
     root.bind("<KeyPress-Right>" , lambda event: update_display_values(1))
     root.bind("<Control-a>", show_add_new_entry)
     root.bind("<Control-d>", remove_entry_by_id)
+    root.bind("<F5>", refresh_entries)
 
     root.mainloop()
