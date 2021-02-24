@@ -10,6 +10,7 @@ from zipfile import ZipFile as zf
 from pathlib import Path
 from tkinter import *
 
+### FINAL THING TO BUG FIX, USE TRIPLE QUOTATIONS ON PROMPTS TO AVOID QUOTATION ERRORS
 
 root = tk.Tk();
 app_width = 795
