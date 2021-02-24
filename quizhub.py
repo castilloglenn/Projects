@@ -30,8 +30,6 @@ iterator_index = 0
 is_searching = False
 empty = "NULL"
 
-# SAMPLE EXPORT NAME: quizhub_export_184511_02232021.db
-
 try:
     conn = sql.connect(DATABASE_NAME)
     file = os.popen(f"attrib +h {DATABASE_NAME}")
@@ -149,9 +147,12 @@ def update_current_database(imported_database_name):
             mb.showwarning(APP_TITLE, "Database name error. Please check the name and enter again.")
     
 
-def new_record(record, toplevel):
+def new_record(record, toplevel, components):
+    result = get_record_by_question(record[0])
     if record[0] == "Null":
         mb.showwarning(APP_TITLE, "Please enter the question.", parent=toplevel)
+    elif result is not None:
+        mb.showwarning(APP_TITLE, "Question already exists.", parent=toplevel)
     else:
         create_record = f"""INSERT INTO Exams (question, correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3)
                     VALUES({record[0]}, {record[1]}, {record[2]}, {record[3]}, {record[4]} 
@@ -165,6 +166,10 @@ def new_record(record, toplevel):
             if check is not None:
                 remove_record(check[0])
         update_entry_count()
+    
+        if components is not None:
+            for comp in components:
+                comp.set("")
 
 
 def modify_record(qid, column, value):
@@ -404,15 +409,20 @@ def show_add_new_entry(event):
     create_button = Button(entry_root,
                         text="Create New",
                         font="Arial 10 bold",
-                        command= lambda: new_record(
+                        command=lambda: new_record(
                             [
                                 check_entry(question_entry.get()),
                                 check_entry(correct_answer_entry.get()),
                                 check_entry(wrong_answer1_entry.get()),
                                 check_entry(wrong_answer2_entry.get()),
                                 check_entry(wrong_answer3_entry.get())
-                            ], entry_root
-                        )).pack(
+                            ], entry_root, [
+                            question_entry,
+                            correct_answer_entry,
+                            wrong_answer1_entry,
+                            wrong_answer2_entry,
+                            wrong_answer3_entry
+                        ])).pack(
                             fill="both"
                         )
     cancel_button = Button(entry_root,
@@ -422,16 +432,21 @@ def show_add_new_entry(event):
                             fill="both"
                         )
 
-    entry_root.bind("<KeyPress-Return>", lambda: new_record(
+    entry_root.bind("<KeyPress-Return>", lambda event: new_record(
                             [
                                 check_entry(question_entry.get()),
                                 check_entry(correct_answer_entry.get()),
                                 check_entry(wrong_answer1_entry.get()),
                                 check_entry(wrong_answer2_entry.get()),
                                 check_entry(wrong_answer3_entry.get())
-                            ], entry_root
-                        ))
-    entry_root.bind("<Escape>", lambda: entry_root.destroy())
+                            ], entry_root, [
+                            question_entry,
+                            correct_answer_entry,
+                            wrong_answer1_entry,
+                            wrong_answer2_entry,
+                            wrong_answer3_entry
+                            ]))
+    entry_root.bind("<Escape>", lambda event: entry_root.destroy())
 
 
 def remove_entry_by_id(event):
