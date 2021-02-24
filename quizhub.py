@@ -19,7 +19,7 @@ screen_height = root.winfo_screenheight()
 screen_x = int((screen_width / 2) - (app_width / 2))
 screen_y = int((screen_height / 2) - (app_height / 1.75))
 
-APP_TITLE = "QuizHub Ver.0.9 Beta"
+APP_TITLE = "QuizHub Ver.1.0 Alpha"
 DATABASE_NAME = "quizhub.db"
 HEADING_COLOR = "#284B63"
 BODY_COLOR = "#f7f7f2"
@@ -167,9 +167,8 @@ def new_record(record, toplevel, components):
                 remove_record(check[0])
         update_entry_count()
     
-        if components is not None:
-            for comp in components:
-                comp.set("")
+        for comp in components:
+            comp.set("")
 
 
 def modify_record(qid, column, value):
@@ -199,6 +198,10 @@ def check_entry(string):
     return f"\"{formatted_string}\""
 
 
+def check_query(data):
+    return data if data is not None else " "
+
+
 def search_database(event):
     global query_result, iterator_index, is_searching
     search_label['text'] = "Search Question:"
@@ -214,13 +217,19 @@ def search_database(event):
                 next_button['state'] = NORMAL
             search_label['text'] = f"Result: {1}/{len(query_result)}"
             is_searching = True
+            iterator_index = 0
             update_display_values(0)
+
+
+def paste_and_search(event):
+    search_entry.set(root.clipboard_get())
+    search_database(0)
 
 
 def update_display_values(trav):
     global query_result, iterator_index, is_searching
     if query_result == [] or (previous_button['state'] == DISABLED and next_button['state'] == DISABLED):
-        return -1
+        pass
     elif not is_searching:
         next_button['state'] = DISABLED
         if trav == 0:
@@ -248,12 +257,12 @@ def update_display_values(trav):
                 next_button['state'] = NORMAL
                 previous_button['state'] = NORMAL
             search_label['text'] = f"Result: {iterator_index + 1}/{len(query_result)}"
-    question_id['text'] = f"Question ID: {query_result[iterator_index][0]}"
-    question_name['text'] = query_result[iterator_index][1]
-    correct_answer['text'] = query_result[iterator_index][2]
-    wrong_answer_1['text'] = f"• {query_result[iterator_index][3]}"
-    wrong_answer_2['text'] = f"• {query_result[iterator_index][4]}"
-    wrong_answer_3['text'] = f"• {query_result[iterator_index][5]}"
+    question_id['text'] = f"Question ID: {check_query(query_result[iterator_index][0])}"
+    question_name['text'] = check_query(query_result[iterator_index][1])
+    correct_answer['text'] = check_query(query_result[iterator_index][2])
+    wrong_answer_1['text'] = f"• {check_query(query_result[iterator_index][3])}"
+    wrong_answer_2['text'] = f"• {check_query(query_result[iterator_index][4])}"
+    wrong_answer_3['text'] = f"• {check_query(query_result[iterator_index][5])}"
 
 
 def update_entry_count():
@@ -681,7 +690,7 @@ if __name__ == "__main__":
                         )
 
     add_entry_button = Button(bottom_frame,
-                        text="(A)dd New Entry", 
+                        text="Add (N)ew Entry", 
                         width=25,  
                         command= lambda: show_add_new_entry(0)).grid(
                             row=1,
@@ -698,7 +707,7 @@ if __name__ == "__main__":
                             padx=5
                         )
     update_database_button = Button(bottom_frame,
-                        text="(C)opy/Update Database", 
+                        text="(U)pdate Database", 
                         width=25,  
                         command=lambda: update_database(0)).grid(
                             row=1,
@@ -724,10 +733,11 @@ if __name__ == "__main__":
     root.bind("<KeyPress-Return>" , lambda event: search_database(0))
     root.bind("<KeyPress-Left>" , lambda event: update_display_values(-1))
     root.bind("<KeyPress-Right>" , lambda event: update_display_values(1))
-    root.bind("<Control-a>", lambda event: show_add_new_entry(0))
-    root.bind("<Control-c>", lambda event: update_database(0))
+    root.bind("<Control-n>", lambda event: show_add_new_entry(0))
+    root.bind("<Control-u>", lambda event: update_database(0))
     root.bind("<Control-d>", lambda event: remove_entry_by_id(0))
     root.bind("<Control-e>", lambda event: export_database(0))
+    root.bind("<F1>", lambda event: paste_and_search(0))
     root.bind("<F5>", lambda event: refresh_entries(0))
 
     root.mainloop()
