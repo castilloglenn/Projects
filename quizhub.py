@@ -104,11 +104,16 @@ def get_record_by_question(question):
 def update_current_database(imported_database_name):
     new_records_count = 0
     try:
-        if Path(imported_database_name).is_file():
-            with zf(imported_database_name, "r") as zip:
+        if ".zip" not in imported_database_name:
+            database_string_name = imported_database_name + ".zip"
+        else:
+            database_string_name = imported_database_name
+
+        if Path(database_string_name).is_file():
+            with zf(database_string_name, "r") as zip:
                 zip.extractall()
 
-            new_conn = sql.connect(imported_database_name.replace(".zip", ".db"))
+            new_conn = sql.connect(database_string_name.replace(".zip", ".db"))
             new_cursor = new_conn.cursor()
 
             all_records_command = f"SELECT * FROM Exams"
@@ -131,7 +136,7 @@ def update_current_database(imported_database_name):
             mb.showinfo(APP_TITLE + ": SUCCESS", f"Database updated, {added_records} new entries has been added.")
             new_cursor.close()
             new_conn.close()
-            os.remove(imported_database_name.replace(".zip", ".db"))
+            os.remove(database_string_name.replace(".zip", ".db"))
             count = record_count()
             if len(count[0]) > 1:
                 check = get_record_by_question(check_entry(f"Welcome to {APP_TITLE}"))
@@ -229,9 +234,11 @@ def update_display_values(trav):
             if iterator_index >= len(query_result) - 1:
                 iterator_index =  len(query_result) - 1
                 next_button['state'] = DISABLED
+                previous_button['state'] = NORMAL
             elif iterator_index <= 0:
                 iterator_index = 0
                 previous_button['state'] = DISABLED
+                next_button['state'] = NORMAL
             else:
                 next_button['state'] = NORMAL
                 previous_button['state'] = NORMAL
@@ -271,11 +278,11 @@ def refresh_entries(event):
 def update_database(event):
     database_name = sd.askstring(
         APP_TITLE, 
-        "Please enter the name of the database: (Ex. quizhub_export_184511_02232021.db)"
+        "Please enter the name of the database: \n(Ex. quizhub_export_184511_02232021.zip)"
     )
     if database_name == "":
         mb.showwarning(APP_TITLE, "Please enter value on the field.")
-    else:
+    elif database_name != None:
         update_current_database(database_name)
 
 
