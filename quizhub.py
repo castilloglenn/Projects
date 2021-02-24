@@ -2,7 +2,7 @@ import sqlite3 as sql
 import tkinter as tk
 import datetime as dt
 import random as r
-import os
+import os, shutil
 from sqlite3 import Error
 from tkinter import messagebox as mb
 from tkinter import simpledialog as sd
@@ -105,7 +105,10 @@ def update_current_database(imported_database_name):
     new_records_count = 0
     try:
         if Path(imported_database_name).is_file():
-            new_conn = sql.connect(imported_database_name)
+            with zf(imported_database_name, "r") as zip:
+                zip.extractall()
+
+            new_conn = sql.connect(imported_database_name.replace(".zip", ".db"))
             new_cursor = new_conn.cursor()
 
             all_records_command = f"SELECT * FROM Exams"
@@ -126,10 +129,18 @@ def update_current_database(imported_database_name):
                     conn.commit()
                     added_records += 1
             mb.showinfo(APP_TITLE + ": SUCCESS", f"Database updated, {added_records} new entries has been added.")
+            new_cursor.close()
+            new_conn.close()
+            os.remove(imported_database_name.replace(".zip", ".db"))
+            count = record_count()
+            if len(count[0]) > 1:
+                check = get_record_by_question(check_entry(f"Welcome to {APP_TITLE}"))
+                if check is not None:
+                    remove_record(check[0])
             update_entry_count()
         else:
             mb.showwarning(APP_TITLE, "Database not found. Please check the name and enter again.")
-    except:
+    except Error:
             mb.showwarning(APP_TITLE, "Database name error. Please check the name and enter again.")
     
 
@@ -191,7 +202,7 @@ def search_database(event):
         else:
             if len(query_result) > 1:
                 next_button['state'] = NORMAL
-            search_label['text'] = f"Result: {iterator_index + 1}/{len(query_result)}"
+            search_label['text'] = f"Result: {1}/{len(query_result)}"
             is_searching = True
             update_display_values(0)
 
@@ -201,6 +212,7 @@ def update_display_values(trav):
     if query_result == [] or (previous_button['state'] == DISABLED and next_button['state'] == DISABLED):
         return -1
     elif not is_searching:
+        next_button['state'] = DISABLED
         if trav == 0:
             iterator_index = 0
         else:
@@ -268,9 +280,19 @@ def update_database(event):
 
 
 def export_database(event):
-    timestamp = dt.datetime.now().strftime("_export_%H%M%S_%m%d%Y.db")
-    export_file_name = DATABASE_NAME.replace(".db", timestamp)
-    print(export_file_name)
+    confirmation = mb.askyesno(APP_TITLE + ": Please confirm", "Are you sure you want to\nexport the database?")
+    if confirmation:
+        timestamp = dt.datetime.now().strftime("_export_%H%M%S_%m%d%Y.db")
+        export_file_name = DATABASE_NAME.replace(".db", timestamp)
+        cwd = os.getcwd()
+        file = DATABASE_NAME
+        new = export_file_name
+        shutil.copy(cwd+"\\"+file, cwd+"\\"+new)
+        with zf(new.replace(".db", ".zip"), "w") as zip:
+            zip.write(new)
+        os.remove(new)
+        mb.showinfo(APP_TITLE+": SUCCESS", 
+f"Database has been exported successfully!\nPlease check the current folder for the file named:\n\"{export_file_name}\"")
 
 #===========================END OF UTILITY COMMANDS=====================================
 
